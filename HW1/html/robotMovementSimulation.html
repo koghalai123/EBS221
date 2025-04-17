@@ -1,0 +1,996 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      -->
+<title>robotMovementSimulation</title>
+<meta name="generator" content="MATLAB 24.1">
+<link rel="schema.DC" href="http://purl.org/dc/elements/1.1/">
+<meta name="DC.date" content="2025-04-14">
+<meta name="DC.source" content="robotMovementSimulation.m">
+<style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; }
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+span.typesection { color:#A0522D }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style>
+</head>
+<body>
+<div class="content">
+<pre class="codeinput">close <span class="string">all</span>;
+clear;
+
+
+<span class="keyword">global</span> dt DT
+
+<span class="comment">% %test</span>
+<span class="comment">% dt = 0.001;</span>
+<span class="comment">% DT = 0.1;</span>
+<span class="comment">%</span>
+<span class="comment">% Qmin = [-inf,-inf,-inf,-inf,-inf]';</span>
+<span class="comment">% Qmax = -Qmin;</span>
+<span class="comment">% Umin = [-inf,-inf]';</span>
+<span class="comment">% Umax = -Umin;</span>
+<span class="comment">% L = 1;</span>
+<span class="comment">% tau_gamma = 0.01;</span>
+<span class="comment">% tau_v = 0.01;</span>
+<span class="comment">%</span>
+<span class="comment">% % x y theta gamma v</span>
+<span class="comment">% Q0 = [0;0;0;0;0];</span>
+<span class="comment">% % gammaD VD</span>
+<span class="comment">% U0 = [1;1];</span>
+<span class="comment">% Q = Q0;</span>
+<span class="comment">% U = U0;</span>
+<span class="comment">%</span>
+<span class="comment">% numTimesteps = 10;</span>
+<span class="comment">% numIntegrationSteps = numTimesteps*DT/dt;</span>
+<span class="comment">%</span>
+<span class="comment">% QAll = zeros(numIntegrationSteps,length(Q));</span>
+<span class="comment">% for j = 1:numTimesteps</span>
+<span class="comment">%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);</span>
+<span class="comment">%     Q = QNext(end,:)';</span>
+<span class="comment">%     QAll((j-1)*100+1:(j-1)*100+100,:) = QNext;</span>
+<span class="comment">% end</span>
+<span class="comment">%</span>
+<span class="comment">% f1 = figure();</span>
+<span class="comment">% a1 = axes(f1);</span>
+<span class="comment">% lineLength = linspace(0,1);</span>
+<span class="comment">% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];</span>
+<span class="comment">% hold on;</span>
+<span class="comment">% plot(QAll(:,1),QAll(:,2),'DisplayName','Path');</span>
+<span class="comment">% plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');</span>
+<span class="comment">% legend</span>
+<span class="comment">% axis equal</span>
+
+
+
+<span class="comment">%B Part 1</span>
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+rD = 3;
+<span class="comment">%find steering angle for 3 m</span>
+<span class="comment">%thetaDot = omega = v tan (gamma/L) = omega*r tan (gamma/L) ;</span>
+<span class="comment">% r = 1/tan(gamma/L);</span>
+<span class="comment">% gammaD = L*atan(1/r)</span>
+gammaD = atan(L/rD);
+
+<span class="comment">% x y theta gamma v</span>
+Q0 = [10;10;pi/2;0;0];
+<span class="comment">% gammaD VD</span>
+U0 = [gammaD;1];
+Q = Q0;
+U = U0;
+
+timeToRun = round(3.3*pi,-floor(log10(DT)));
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+<span class="keyword">for</span> j = 1:numTimesteps+1
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+<span class="keyword">end</span>
+
+f1 = figure();
+a1 = axes(f1);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold <span class="string">on</span>;
+plot(QAll(:,1),QAll(:,2),<span class="string">'LineWidth'</span>,2,<span class="string">'DisplayName'</span>,<span class="string">'Path'</span>);
+plot(thetaLine(:,1),thetaLine(:,2),<span class="string">'LineWidth'</span>,2,<span class="string">'DisplayName'</span>,<span class="string">'Direction of Travel'</span>);
+
+theta = linspace(0,2*pi)';
+desiredPath = rD*[cos(theta),sin(theta)]+[10-rD,10];
+plot(desiredPath(:,1),desiredPath(:,2),<span class="string">'--'</span>,<span class="string">'LineWidth'</span>,1,<span class="string">'DisplayName'</span>,<span class="string">'Desired Path'</span>)
+legend
+axis <span class="string">equal</span>
+xlabel(<span class="string">'X []'</span>);
+ylabel(<span class="string">'Y []'</span>);
+title(<span class="string">"B, Part 1"</span>);
+
+
+
+<span class="comment">%B Part 2</span>
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+rD = 2;
+<span class="comment">%find steering angle for 3 m</span>
+<span class="comment">%thetaDot = omega = v tan (gamma/L) = omega*r tan (gamma/L) ;</span>
+<span class="comment">% r = 1/tan(gamma/L);</span>
+<span class="comment">% gammaD = L*atan(1/r)</span>
+gammaD = atan(L/rD);
+
+<span class="comment">% x y theta gamma v</span>
+Q0 = [10;10;pi/2;0;0];
+<span class="comment">% gammaD VD</span>
+U0 = [gammaD;1];
+Q = Q0;
+U = U0;
+
+timeToRun = round(3.3*pi*0.84,-floor(log10(DT)));
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+<span class="keyword">for</span> j = 1:numTimesteps+1
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+<span class="keyword">end</span>
+
+f2 = figure();
+a2 = axes(f2);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold <span class="string">on</span>;
+
+
+theta = linspace(0,2*pi)';
+desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
+
+plot(QAll(:,1),QAll(:,2),<span class="string">'LineWidth'</span>,2,<span class="string">'DisplayName'</span>,<span class="string">'Path'</span>);
+plot(thetaLine(:,1),thetaLine(:,2),<span class="string">'LineWidth'</span>,2,<span class="string">'DisplayName'</span>,<span class="string">'Direction of Travel'</span>);
+plot(desiredPath(:,1),desiredPath(:,2),<span class="string">'--'</span>,<span class="string">'LineWidth'</span>,1,<span class="string">'DisplayName'</span>,<span class="string">'Desired Path'</span>)
+
+legend
+axis <span class="string">equal</span>
+xlabel(<span class="string">'X []'</span>);
+ylabel(<span class="string">'Y []'</span>);
+title(<span class="string">"B, Part 2"</span>);
+
+
+<span class="comment">%C Part 0</span>
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+<span class="comment">% x y theta gamma v</span>
+Q0 = [10;10;pi/2;0;0];
+<span class="comment">% gammaD VD</span>
+U0 = [0;1];
+Q = Q0;
+U = U0;
+
+timeToRun = 21;
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+
+inputCommandMat = [0,1,0;
+                   Umax(1),1,1;
+                   -Umax(1),1,11;
+                   0,0,21];
+[commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
+<span class="keyword">for</span> j = 1:numTimesteps
+    U = commandMat(j,1:2)';
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+<span class="keyword">end</span>
+
+f2 = figure();
+a2 = axes(f2);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold <span class="string">on</span>;
+
+
+theta = linspace(0,2*pi)';
+<span class="comment">%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];</span>
+<span class="comment">%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')</span>
+
+plot(QAll(:,1),QAll(:,2),<span class="string">'DisplayName'</span>,<span class="string">'Path'</span>);
+plot(thetaLine(:,1),thetaLine(:,2),<span class="string">'DisplayName'</span>,<span class="string">'Direction of Travel'</span>);
+scatter(Q0(1),Q0(2),100,<span class="string">'o'</span>,<span class="string">'DisplayName'</span>,<span class="string">'Initial Position'</span>);
+scatter(QAll(end,1),QAll(end,2),100,<span class="string">'*'</span>,<span class="string">'DisplayName'</span>,<span class="string">'Final Position'</span>);
+
+<span class="comment">% plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');</span>
+<span class="comment">% plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');</span>
+<span class="comment">% plot(desiredPath(:,1),desiredPath(:,2),'--','LineWidth',1,'DisplayName','Desired Path')</span>
+
+
+xlabel(<span class="string">'X []'</span>);
+ylabel(<span class="string">'Y []'</span>);
+title(<span class="string">"\tau_\gamma = 0, \tau_v = 0"</span>);
+
+legend
+axis <span class="string">equal</span>
+
+
+<span class="comment">%C Part 1</span>
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+<span class="comment">% x y theta gamma v</span>
+Q0 = [10;10;pi/2;0;0];
+<span class="comment">% gammaD VD</span>
+U0 = [0;1];
+Q = Q0;
+U = U0;
+
+timeToRun = 21;
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+
+inputCommandMat = [0,1,0;
+                   Umax(1),1,1;
+                   -Umax(1),1,11;
+                   0,0,21];
+[commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
+tauVMat = [0:0.4:2];
+f2 = figure();
+a2 = axes(f2);
+hold <span class="string">on</span>;
+
+<span class="keyword">for</span> i = 1:length(tauVMat)
+    tau_v = tauVMat(i);
+    Q = Q0;
+<span class="keyword">for</span> j = 1:numTimesteps
+    U = commandMat(j,1:2)';
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+<span class="keyword">end</span>
+
+
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+plot(QAll(:,1),QAll(:,2),<span class="string">'DisplayName'</span>,strcat(<span class="string">"Path: [\tau_\gamma, \tau_v]: ["</span>, num2str([tau_gamma]), <span class="string">', '</span>,num2str([tau_v]),<span class="string">']'</span>));
+<span class="comment">%plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');</span>
+
+theta = linspace(0,2*pi)';
+<span class="comment">%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];</span>
+<span class="comment">%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')</span>
+<span class="comment">%scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');</span>
+<span class="comment">%scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');</span>
+<span class="keyword">end</span>
+xlabel(<span class="string">'X []'</span>);
+ylabel(<span class="string">'Y []'</span>);
+title(<span class="string">"\tau_\gamma = 0, \tau_v = [0,0.4,0.8,1.2,1.6,2]"</span>);
+legend
+axis <span class="string">equal</span>
+
+<span class="comment">%C Part 2</span>
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+<span class="comment">% x y theta gamma v</span>
+Q0 = [10;10;pi/2;0;0];
+<span class="comment">% gammaD VD</span>
+U0 = [0;1];
+Q = Q0;
+U = U0;
+
+timeToRun = 21;
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+
+inputCommandMat = [0,1,0;
+                   Umax(1),1,1;
+                   -Umax(1),1,11;
+                   0,0,21];
+[commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
+tauVMat = [0:0.4:2];
+tauGammaMat = [0:0.4:2];
+
+f2 = figure();
+a2 = axes(f2);
+hold <span class="string">on</span>;
+
+<span class="keyword">for</span> i = 1:length(tauGammaMat)
+    tau_gamma = tauGammaMat(i);
+    Q = Q0;
+<span class="keyword">for</span> j = 1:numTimesteps
+    U = commandMat(j,1:2)';
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+<span class="keyword">end</span>
+
+
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+plot(QAll(:,1),QAll(:,2),<span class="string">'DisplayName'</span>,strcat(<span class="string">"Path: [\tau_\gamma, \tau_v]: ["</span>, num2str([tau_gamma]), <span class="string">', '</span>,num2str([tau_v]),<span class="string">']'</span>));
+<span class="comment">%plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');</span>
+
+theta = linspace(0,2*pi)';
+<span class="comment">%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];</span>
+<span class="comment">%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')</span>
+<span class="comment">%scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');</span>
+<span class="comment">%scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');</span>
+<span class="keyword">end</span>
+
+xlabel(<span class="string">'X []'</span>);
+ylabel(<span class="string">'Y []'</span>);
+title(<span class="string">"\tau_\gamma = [0,0.4,0.8,1.2,1.6,2], \tau_v = 0"</span>);
+legend
+axis <span class="string">equal</span>
+
+
+
+
+
+<span class="keyword">function</span> [commandMat] = movementCommands(timeToRun,DT,inputCommandMat)
+<span class="comment">%specify input commands as a matrix where the first and second columns are</span>
+<span class="comment">%the commands and the third column is the time at which it starts</span>
+timeSteps = [inputCommandMat(1,end):DT:inputCommandMat(end,end)];
+<span class="comment">%commandMat = interp1()</span>
+commandMat = [];
+<span class="keyword">for</span> m = 1:size(inputCommandMat,1)-1
+    A = inputCommandMat(m,:);
+    n = (inputCommandMat(m+1,end)-inputCommandMat(m,end))/DT;
+    t = [inputCommandMat(m,end):DT:inputCommandMat(m+1,end)-DT]';
+    B = repmat(A,[n,1]);
+    B(:,end) = t;
+    commandMat = [commandMat;B];
+<span class="keyword">end</span>
+<span class="keyword">end</span>
+
+
+<span class="keyword">function</span> [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v)
+<span class="keyword">global</span> dt DT
+
+U = max(U,Umin);
+Q = max(Q,Qmin);
+U = min(U,Umax);
+Q = min(Q,Qmax);
+
+x = Q(1);
+y = Q(2);
+theta = Q(3);
+gamma = Q(4);
+V = Q(5);
+
+gammaD = U(1);
+VD = U(2);
+
+steps = (DT/dt-1);
+QNext = zeros(steps+1,length(Q));
+QNext(1,:) = Q;
+
+<span class="keyword">if</span> tau_gamma == 0
+tau_gamma= dt;
+<span class="keyword">end</span>
+<span class="keyword">if</span> tau_v == 0
+tau_v= dt;
+<span class="keyword">end</span>
+
+<span class="keyword">for</span> i = 1:steps
+    x = Q(1);
+    y = Q(2);
+    theta = Q(3);
+    gamma = Q(4);
+    V = Q(5);
+
+    xDot = V*cos(theta);
+    yDot = V*sin(theta);
+    thetaDot = V*tan(gamma)/L;
+    VDot = (-V+VD)/tau_v;
+    gammaDot = (-gamma+gammaD)/tau_gamma;
+    QDot = [xDot;yDot;thetaDot;gammaDot;VDot];
+    QNew = Q+QDot*dt;
+    Q = QNew;
+
+    QNext(i+1,:) = QNew;
+<span class="keyword">end</span>
+
+
+
+
+
+
+
+
+<span class="keyword">end</span>
+</pre>
+<img vspace="5" hspace="5" src="robotMovementSimulation_01.png" alt=""> <img vspace="5" hspace="5" src="robotMovementSimulation_02.png" alt=""> <img vspace="5" hspace="5" src="robotMovementSimulation_03.png" alt=""> <img vspace="5" hspace="5" src="robotMovementSimulation_04.png" alt=""> <img vspace="5" hspace="5" src="robotMovementSimulation_05.png" alt=""> <p class="footer">
+<br>
+<a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2024a</a>
+<br>
+</p>
+</div>
+<!--
+##### SOURCE BEGIN #####
+close all;
+clear;
+
+
+global dt DT
+
+% %test
+% dt = 0.001;
+% DT = 0.1;
+% 
+% Qmin = [-inf,-inf,-inf,-inf,-inf]';
+% Qmax = -Qmin;
+% Umin = [-inf,-inf]';
+% Umax = -Umin;
+% L = 1;
+% tau_gamma = 0.01;
+% tau_v = 0.01;
+% 
+% % x y theta gamma v
+% Q0 = [0;0;0;0;0];
+% % gammaD VD
+% U0 = [1;1];
+% Q = Q0;
+% U = U0;
+% 
+% numTimesteps = 10;
+% numIntegrationSteps = numTimesteps*DT/dt;
+% 
+% QAll = zeros(numIntegrationSteps,length(Q));
+% for j = 1:numTimesteps
+%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+%     Q = QNext(end,:)';
+%     QAll((j-1)*100+1:(j-1)*100+100,:) = QNext;
+% end
+% 
+% f1 = figure();
+% a1 = axes(f1);
+% lineLength = linspace(0,1);
+% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+% hold on;
+% plot(QAll(:,1),QAll(:,2),'DisplayName','Path');
+% plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+% legend
+% axis equal
+
+
+
+%B Part 1
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+rD = 3;
+%find steering angle for 3 m
+%thetaDot = omega = v tan (gamma/L) = omega*r tan (gamma/L) ;
+% r = 1/tan(gamma/L);
+% gammaD = L*atan(1/r)
+gammaD = atan(L/rD);
+
+% x y theta gamma v
+Q0 = [10;10;pi/2;0;0];
+% gammaD VD
+U0 = [gammaD;1];
+Q = Q0;
+U = U0;
+
+timeToRun = round(3.3*pi,-floor(log10(DT)));
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+for j = 1:numTimesteps+1
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+end
+
+f1 = figure();
+a1 = axes(f1);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold on;
+plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
+plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
+
+theta = linspace(0,2*pi)';
+desiredPath = rD*[cos(theta),sin(theta)]+[10-rD,10];
+plot(desiredPath(:,1),desiredPath(:,2),'REPLACE_WITH_DASH_DASH','LineWidth',1,'DisplayName','Desired Path')
+legend
+axis equal
+xlabel('X []');
+ylabel('Y []');
+title("B, Part 1");
+
+
+
+%B Part 2
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+rD = 2;
+%find steering angle for 3 m
+%thetaDot = omega = v tan (gamma/L) = omega*r tan (gamma/L) ;
+% r = 1/tan(gamma/L);
+% gammaD = L*atan(1/r)
+gammaD = atan(L/rD);
+
+% x y theta gamma v
+Q0 = [10;10;pi/2;0;0];
+% gammaD VD
+U0 = [gammaD;1];
+Q = Q0;
+U = U0;
+
+timeToRun = round(3.3*pi*0.84,-floor(log10(DT)));
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+for j = 1:numTimesteps+1
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+end
+
+f2 = figure();
+a2 = axes(f2);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold on;
+
+
+theta = linspace(0,2*pi)';
+desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
+
+plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
+plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
+plot(desiredPath(:,1),desiredPath(:,2),'REPLACE_WITH_DASH_DASH','LineWidth',1,'DisplayName','Desired Path')
+
+legend
+axis equal
+xlabel('X []');
+ylabel('Y []');
+title("B, Part 2");
+
+
+%C Part 0
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+% x y theta gamma v
+Q0 = [10;10;pi/2;0;0];
+% gammaD VD
+U0 = [0;1];
+Q = Q0;
+U = U0;
+
+timeToRun = 21;
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+
+inputCommandMat = [0,1,0;
+                   Umax(1),1,1;
+                   -Umax(1),1,11;
+                   0,0,21];
+[commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
+for j = 1:numTimesteps
+    U = commandMat(j,1:2)';
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+end
+
+f2 = figure();
+a2 = axes(f2);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold on;
+
+
+theta = linspace(0,2*pi)';
+%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
+%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
+
+plot(QAll(:,1),QAll(:,2),'DisplayName','Path');
+plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
+scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
+
+% plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
+% plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
+% plot(desiredPath(:,1),desiredPath(:,2),'REPLACE_WITH_DASH_DASH','LineWidth',1,'DisplayName','Desired Path')
+
+
+xlabel('X []');
+ylabel('Y []');
+title("\tau_\gamma = 0, \tau_v = 0");
+
+legend
+axis equal
+
+
+%C Part 1
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+% x y theta gamma v
+Q0 = [10;10;pi/2;0;0];
+% gammaD VD
+U0 = [0;1];
+Q = Q0;
+U = U0;
+
+timeToRun = 21;
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+
+inputCommandMat = [0,1,0;
+                   Umax(1),1,1;
+                   -Umax(1),1,11;
+                   0,0,21];
+[commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
+tauVMat = [0:0.4:2];
+f2 = figure();
+a2 = axes(f2);
+hold on;
+
+for i = 1:length(tauVMat)
+    tau_v = tauVMat(i);
+    Q = Q0;
+for j = 1:numTimesteps
+    U = commandMat(j,1:2)';
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+end
+
+
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+plot(QAll(:,1),QAll(:,2),'DisplayName',strcat("Path: [\tau_\gamma, \tau_v]: [", num2str([tau_gamma]), ', ',num2str([tau_v]),']'));
+%plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+
+theta = linspace(0,2*pi)';
+%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
+%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
+%scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
+%scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
+end
+xlabel('X []');
+ylabel('Y []');
+title("\tau_\gamma = 0, \tau_v = [0,0.4,0.8,1.2,1.6,2]");
+legend
+axis equal
+
+%C Part 2
+dt = 0.01;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-pi/4,-5]';
+Qmax = -Qmin;
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
+L = 2.5;
+tau_gamma = 0.0;
+tau_v = 0.0;
+
+% x y theta gamma v
+Q0 = [10;10;pi/2;0;0];
+% gammaD VD
+U0 = [0;1];
+Q = Q0;
+U = U0;
+
+timeToRun = 21;
+numTimesteps = timeToRun/DT;
+integrationStepsPerTimeStep = DT/dt;
+numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+QAll = zeros((numIntegrationSteps),length(Q));
+
+inputCommandMat = [0,1,0;
+                   Umax(1),1,1;
+                   -Umax(1),1,11;
+                   0,0,21];
+[commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
+tauVMat = [0:0.4:2];
+tauGammaMat = [0:0.4:2];
+
+f2 = figure();
+a2 = axes(f2);
+hold on;
+
+for i = 1:length(tauGammaMat)
+    tau_gamma = tauGammaMat(i);
+    Q = Q0;
+for j = 1:numTimesteps
+    U = commandMat(j,1:2)';
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+end
+
+
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+plot(QAll(:,1),QAll(:,2),'DisplayName',strcat("Path: [\tau_\gamma, \tau_v]: [", num2str([tau_gamma]), ', ',num2str([tau_v]),']'));
+%plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+
+theta = linspace(0,2*pi)';
+%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
+%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
+%scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
+%scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
+end
+
+xlabel('X []');
+ylabel('Y []');
+title("\tau_\gamma = [0,0.4,0.8,1.2,1.6,2], \tau_v = 0");
+legend
+axis equal
+
+
+
+
+
+function [commandMat] = movementCommands(timeToRun,DT,inputCommandMat)
+%specify input commands as a matrix where the first and second columns are
+%the commands and the third column is the time at which it starts
+timeSteps = [inputCommandMat(1,end):DT:inputCommandMat(end,end)];
+%commandMat = interp1()
+commandMat = [];
+for m = 1:size(inputCommandMat,1)-1
+    A = inputCommandMat(m,:);
+    n = (inputCommandMat(m+1,end)-inputCommandMat(m,end))/DT;
+    t = [inputCommandMat(m,end):DT:inputCommandMat(m+1,end)-DT]';
+    B = repmat(A,[n,1]);
+    B(:,end) = t;
+    commandMat = [commandMat;B];
+end
+end
+
+
+function [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v)
+global dt DT
+
+U = max(U,Umin);
+Q = max(Q,Qmin);
+U = min(U,Umax);
+Q = min(Q,Qmax);
+
+x = Q(1);
+y = Q(2);
+theta = Q(3);
+gamma = Q(4);
+V = Q(5);
+
+gammaD = U(1);
+VD = U(2);
+
+steps = (DT/dt-1);
+QNext = zeros(steps+1,length(Q));
+QNext(1,:) = Q;
+
+if tau_gamma == 0
+tau_gamma= dt;
+end
+if tau_v == 0
+tau_v= dt;
+end
+
+for i = 1:steps
+    x = Q(1);
+    y = Q(2);
+    theta = Q(3);
+    gamma = Q(4);
+    V = Q(5);
+
+    xDot = V*cos(theta);
+    yDot = V*sin(theta);
+    thetaDot = V*tan(gamma)/L;
+    VDot = (-V+VD)/tau_v;
+    gammaDot = (-gamma+gammaD)/tau_gamma;
+    QDot = [xDot;yDot;thetaDot;gammaDot;VDot];
+    QNew = Q+QDot*dt;
+    Q = QNew;
+
+    QNext(i+1,:) = QNew;
+end
+
+
+
+
+
+
+
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### SOURCE END #####
+-->
+</body>
+</html>
