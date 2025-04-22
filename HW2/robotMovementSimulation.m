@@ -41,15 +41,16 @@ QAll = zeros((numIntegrationSteps),length(Q));
 Ld = 2;
 
 path = [xPath;yPath];
-crossTrackErrorMat = zeros(numTimesteps,1);
+crossTrackErrorMat = zeros(numTimesteps,2);
 
 for j = 1:numTimesteps
     
-    [gammaD,endDistance,crossTrackError] = purePursuit(Q,L,Ld,path);
-    crossTrackErrorMat(j)=crossTrackError;
+     [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,path);
+    crossTrackErrorMat(j,1)=crossTrackError;
+    crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
     if endDistance<0.3
         QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
-        crossTrackErrorMat=crossTrackErrorMat(1:j);
+        crossTrackErrorMat=crossTrackErrorMat(1:j,:);
         break
     end
 
@@ -74,7 +75,9 @@ theta = linspace(0,2*pi)';
 %plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
 
 plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
-plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
+
+plot(xPath,yPath,'--','LineWidth',1,'DisplayName','Desired Path');
+plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Ending Direction of Travel');
 scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
 scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
 
@@ -95,39 +98,14 @@ axis equal
 f3 = figure();
 a3 = axes(f3);
 hold on;
-plot([0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat,DisplayName='Cross Track Error')
+plot([0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,1),DisplayName='Cross Track Error From Given Points')
+plot([0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,2),DisplayName='Cross Track Error Interpolated')
 
 xlabel('Time [s]');
 ylabel('Cross Track Error [m]');
 title("Cross Track Error vs. Time");
 
-function [gammaD,endDistance,crossTrackError] = purePursuit(Q,L,Ld,path)
-xPath = path(1,:);
-yPath = path(2,:);
-
-
-globalRobotLoc = [Q(1:2)];
-distanceMatRobot= (sum((Q(1:2)-[xPath;yPath]).^2).^.5);
-[Dmin,minPointIndex] = min(distanceMatRobot,[],2);
-nearestPathPoint = [xPath(minPointIndex);yPath(minPointIndex)];
-futurePathMat = [xPath(minPointIndex:end);yPath(minPointIndex:end)];
-distanceMatPath = (sum((nearestPathPoint-futurePathMat).^2).^.5);
-targetPointIndex = find(distanceMatPath>Ld,1);
-globalTargetPoint = futurePathMat(:,targetPointIndex);
-globalDistanceVector = globalTargetPoint-globalRobotLoc;
-robotDistanceVector = trot2(Q(3), 'rad')'*[globalDistanceVector;1];
-% close all
-% plot(xPath,yPath)
-% hold on
-% scatter(globalRobotLoc(1),globalRobotLoc(2))
-% scatter(nearestPathPoint(1),nearestPathPoint(2))
-% scatter(globalTargetPoint(1),globalTargetPoint(2))
-% axis equal
-k=2*robotDistanceVector(2)/Ld^2;
-gammaD = atan(k*L);
-endDistance=distanceMatRobot(end);
-crossTrackError=Dmin;
-end
+legend
 
 
 
@@ -149,61 +127,7 @@ end
 end
 
 
-function [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v)
-global dt DT
 
-U = max(U,Umin);
-Q = max(Q,Qmin);
-U = min(U,Umax);
-Q = min(Q,Qmax);
-
-x = Q(1);
-y = Q(2);
-theta = Q(3);
-gamma = Q(4);
-V = Q(5);
-
-gammaD = U(1);
-VD = U(2);
-
-steps = (DT/dt-1);
-QNext = zeros(steps+1,length(Q));
-QNext(1,:) = Q;
-
-if tau_gamma == 0
-tau_gamma= dt;
-end
-if tau_v == 0
-tau_v= dt;
-end
-
-for i = 1:steps
-    x = Q(1);
-    y = Q(2);
-    theta = Q(3);
-    gamma = Q(4);
-    V = Q(5);
-
-    xDot = V*cos(theta);
-    yDot = V*sin(theta);
-    thetaDot = V*tan(gamma)/L;
-    VDot = (-V+VD)/tau_v;
-    gammaDot = (-gamma+gammaD)/tau_gamma;
-    QDot = [xDot;yDot;thetaDot;gammaDot;VDot];
-    QNew = Q+QDot*dt;
-    Q = QNew;
-
-    QNext(i+1,:) = QNew;
-end
-
-
-
-
-
-
-
-
-end
 
 
 
