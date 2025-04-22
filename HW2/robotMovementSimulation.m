@@ -16,7 +16,7 @@ L = 2.5;
 tau_gamma = 0.0;
 tau_v = 0.0;
 
-a = 0: 0.1 : 2*pi;  % angle step for points on circular path 
+a = 0: 0.01 : 2*pi;  % angle step for points on circular path 
 xPath = 9 + 5*sin(a); yPath = 7-5*cos(a);
 
 % x y theta gamma v
