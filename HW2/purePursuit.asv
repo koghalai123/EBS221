@@ -26,8 +26,17 @@ endDistance=distanceMatRobot(end);
 crossTrackError=Dmin;
 numInterpolatedPoints = 50;
 interpolationIndices = linspace(0,200,numInterpolatedPoints);
-nearestPathX =xPath([minPointIndex-1,minPointIndex,minPointIndex+1]);
-nearestPathY = yPath([minPointIndex-1,minPointIndex,minPointIndex+1]);
+if minPointIndex==1
+    nearestPathX =xPath([minPointIndex,minPointIndex,minPointIndex+1]);
+    nearestPathY = yPath([minPointIndex,minPointIndex,minPointIndex+1]);
+elseif minPointIndex==
+    nearestPathX =xPath([minPointIndex-1,minPointIndex,minPointIndex+1]);
+    nearestPathY = yPath([minPointIndex-1,minPointIndex,minPointIndex+1]);
+else
+
+    nearestPathX =xPath([minPointIndex-1,minPointIndex,minPointIndex+1]);
+    nearestPathY = yPath([minPointIndex-1,minPointIndex,minPointIndex+1]);
+end
 interpolatedPointsX = interp1([0,100,200],nearestPathX,interpolationIndices);
 interpolatedPointsY = interp1([0,100,200],nearestPathY,interpolationIndices);
 
