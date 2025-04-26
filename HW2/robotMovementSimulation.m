@@ -8,8 +8,8 @@ global dt DT
 dt = 0.001;
 DT = 0.01;
 
-%Part B
-
+% %Part B
+% 
 % Qmin = [-inf,-inf,-inf,-pi/4,-1]';
 % Qmax = -Qmin;
 % Umin = [Qmin(4),Qmin(5)]';
