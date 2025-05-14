@@ -50,7 +50,7 @@ Qend = [-3*W;RL/2;0;0;0];
 Rmin = L/tan(gamma_max);
 
 DMAT = nan(2+3*N);
-noFinalPos = 1;
+noFinalPos = 0;
 
 
 x_i = Q0(1);
