@@ -10,18 +10,18 @@ dt = .1;  % (s) sampling rate
 
 %% Define update equations (Coefficent matrices): A Newtonian based model for 
 %% where we expect the object to be [state transition (state + velocity)] + [input control (acceleration)]
-F = [] ; % state transition matrix:  expected motion of the object (state prediction)
-B = []; %input control matrix:  expected effect of the input accceleration on the state.
-H = []; % measurement matrix
+F = [1,dt;0,1] ; % state transition matrix:  expected motion of the object (state prediction)
+B = [dt^2/2;dt]; %input control matrix:  expected effect of the input accceleration on the state.
+H = [1,0]; % measurement matrix
 
 %% define main variables
 u = 1.5; % define acceleration magnitude
 X= [0; 0]; %initialized state--it has two components: [position; velocity]
 Accel_noise_mag = 5; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
-Q = []; % Compute the covariance matrix from the standard deviation of the process noise
+Q = [Accel_noise_mag^2*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 Sensor_noise_mag = 10;  %measurement noise: (stdv of location, in meters)
-R = [];% Compute the covariance matrix from the standard deviation of the measurement noise
+R = [Sensor_noise_mag^2];% Compute the covariance matrix from the standard deviation of the measurement noise
 X_estimate = X;  %x_estimate of initial location
 P = Q; % Initialize covariance matrix P to model covariance
 
@@ -36,24 +36,24 @@ for t = 0 : dt: duration
     % Generate the object's true (noisy) trajectory
    
     w = Accel_noise_mag * randn;
-    X = ;
+    X = F*X+B*(u+w);
     % Generate what the sensor sees; noise is included.
-    v = ;
-    z = ;
+    v = Sensor_noise_mag*randn;
+    z = X(1)+v;
     
     % Prediction phase
     % predict next state of the object with the last state and predicted motion.
-    X_estimate = ;
+    X_estimate =  F*X+B*(u);
     %predict next error covariance
-    P = ;
+    P = F*P*F'+Q;
     
     % compute Kalman Gain
-    K = ;
+    K = P*H'*(H*P*H'+R)^-1;
     
     % Update the state estimate after measurement.
-    X_estimate = ;
+    X_estimate = X_estimate+K*(z-H*X_estimate);
     % update error covariance estimation.
-    P =  ;
+    P =  P-K*H*P;
     %% End of Kalman filter equations
     
     %Store for plotting

@@ -4,413 +4,20 @@ clear;
 
 global dt DT
 
-%test
 dt = 0.001;
 DT = 0.01;
-
-% %Part B
-% 
-% Qmin = [-inf,-inf,-inf,-pi/4,-1]';
-% Qmax = -Qmin;
-% Umin = [Qmin(4),Qmin(5)]';
-% Umax = -Umin;
-% L = 2.5;
-% tau_gamma = 0.0;
-% tau_v = 0.0;
-% 
-% a = 0: 0.01 : 2*pi;  % angle step for points on circular path 
-% xPath = 9 + 5*sin(a); yPath = 7-5*cos(a);
-% 
-% % x y theta gamma v
-% Q0 = [15;5;pi/2;0;0];
-% % gammaD VD
-% U0 = [0;1];
-% Q = Q0;
-% U = U0;
-% 
-% timeToRun = 60;
-% numTimesteps = timeToRun/DT;
-% integrationStepsPerTimeStep = DT/dt;
-% numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
-% QAll = zeros((numIntegrationSteps),length(Q));
-% % 
-% % inputCommandMat = [0,1,0;
-% %                    Umax(1),1,1;
-% %                    -Umax(1),1,11;
-% %                    0,0,21];
-% % [commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
-% 
-% Ld = 2;
-% 
-% path = [xPath;yPath];
-% crossTrackErrorMat = zeros(numTimesteps,2);
-% 
-% for j = 1:numTimesteps
-% 
-%      [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,path);
-%     crossTrackErrorMat(j,1)=crossTrackError;
-%     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
-%     if endDistance<0.3
-%         QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
-%         crossTrackErrorMat=crossTrackErrorMat(1:j,:);
-%         break
-%     end
-% 
-%     U = [gammaD;1];
-%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
-%     Q = QNext(end,:)';
-%     QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
-% 
-% 
-% 
-% end
-% 
-% f2 = figure();
-% a2 = axes(f2);
-% lineLength = linspace(0,1);
-% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
-% hold on;
-% 
-% 
-% theta = linspace(0,2*pi)';
-% %desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
-% %plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
-% 
-% plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
-% 
-% plot(xPath,yPath,'--','LineWidth',1,'DisplayName','Desired Path');
-% plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Ending Direction of Travel');
-% scatter(Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
-% scatter(QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
-% 
-% % plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
-% % plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
-% % plot(desiredPath(:,1),desiredPath(:,2),'--','LineWidth',1,'DisplayName','Desired Path')
-% 
-% 
-% xlabel('X []');
-% ylabel('Y []');
-% title("\tau_\gamma = 0, \tau_v = 0");
-% 
-% legend
-% axis equal
-% 
-% 
-% 
-% f3 = figure();
-% a3 = axes(f3);
-% hold on;
-% plot([0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,1),DisplayName='Cross Track Error From Given Points')
-% plot([0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,2),DisplayName='Cross Track Error Interpolated')
-% 
-% xlabel('Time [s]');
-% ylabel('Cross Track Error [m]');
-% title("Cross Track Error vs. Time");
-% 
-% legend
-
-
-
-
-
-
-
-
-
-% % Part C 1
-% 
-% Qmin = [-inf,-inf,-inf,-pi/4,-1]';
-% Qmax = -Qmin;
-% Umin = [Qmin(4),Qmin(5)]';
-% Umax = -Umin;
-% L = 2.5;
-% tau_gamma = 0.0;
-% tau_v = 0.0;
-% 
-% % a = 0: 0.01 : 2*pi;  % angle step for points on circular path 
-% % xPath = 9 + 5*sin(a); yPath = 7-5*cos(a);
-% 
-% 
-% xPath= [linspace(0,10),linspace(10,10),linspace(10,20)];
-% yPath= [linspace(0,0),linspace(0,5),linspace(5,5)];
-% 
-% 
-% 
-% % x y theta gamma v
-% Q0 = [0;0;0;0;0];
-% % gammaD VD
-% U0 = [0;1];
-% Q = Q0;
-% U = U0;
-% 
-% timeToRun = 60;
-% numTimesteps = timeToRun/DT;
-% integrationStepsPerTimeStep = DT/dt;
-% numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
-% QAll = zeros((numIntegrationSteps),length(Q));
-% % 
-% % inputCommandMat = [0,1,0;
-% %                    Umax(1),1,1;
-% %                    -Umax(1),1,11;
-% %                    0,0,21];
-% % [commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
-% 
-% f2 = figure();
-% a2 = axes(f2);
-% hold on;
-% axis equal
-% plot(a2,xPath,yPath,'--','LineWidth',1,'DisplayName','Desired Path');
-% 
-% 
-% 
-% f3 = figure();
-% a3 = axes(f3);
-% hold on;
-% 
-% f4 = figure();
-% a4 = axes(f4);
-% hold on;
-% 
-% 
-% 
-% LdMat = [0.5:0.5:3.5];
-% colorMat = ['rgbmckyw'];
-% for i = 1:length(LdMat)
-%     color =colorMat(i);
-% path = [xPath;yPath];
-% crossTrackErrorMat = zeros(numTimesteps,2);
-% Ld = LdMat(i);
-% Q=Q0;
-% for j = 1:numTimesteps
-%      [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,path);
-%     crossTrackErrorMat(j,1)=crossTrackError;
-%     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
-%     if endDistance<0.35
-%         QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
-%         crossTrackErrorMat=crossTrackErrorMat(1:j,:);
-%         break
-%     end
-%     U = [gammaD;1];
-%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
-%     Q = QNext(end,:)';
-%     QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
-% end
-% 
-% 
-% lineLength = linspace(0,1);
-% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
-% hold on;
-% 
-% 
-% theta = linspace(0,2*pi)';
-% %desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
-% %plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
-% 
-% plot(a2,QAll(:,1),QAll(:,2),'LineWidth',1.5,'DisplayName',strcat("Path for: L_d = ",num2str(Ld)));
-% 
-% %plot(a2,thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Ending Direction of Travel');
-% %scatter(a2,Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
-% %scatter(a2,QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
-% 
-% % plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
-% % plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
-% % plot(desiredPath(:,1),desiredPath(:,2),'--','LineWidth',1,'DisplayName','Desired Path')
-% 
-% 
-% xlabel(a2,'X []');
-% ylabel(a2,'Y []');
-% title(a2,"Comparing L_d Effects on Path");
-% 
-% legend(a2)
-% 
-% 
-% %plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,1),DisplayName='Cross Track Error From Given Points')
-% plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,2),DisplayName=strcat("Cross Track Error  for: L_d = ",num2str(Ld)))
-% 
-% xlabel(a3,'Time [s]');
-% ylabel(a3,'Cross Track Error [m]');
-% title(a3,"Cross Track Error vs. Time");
-% 
-% legend(a3)
-% 
-% 
-% bar(a4, strcat("Max for: L_d = ",num2str(Ld)), max(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("Mean for: L_d = ",num2str(Ld)), mean(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("95% for: L_d = ",num2str(Ld)), prctile(crossTrackErrorMat(:,2),95),color)
-% bar(a4, strcat("RMS for: L_d = ",num2str(Ld)), rms(crossTrackErrorMat(:,2)),color)
-% ylabel(a4,'Cross Track Error [m]');
-% title(a4,"Cross Track Error Statistics for Various L_d");
-% 
-% if Ld == 2
-%     f5 = figure();
-%     a5 = axes(f5);
-%     hold on;
-%     histogram(crossTrackErrorMat(:,2))
-%     xlabel(a5,'Cross Track Error [m]');
-%     ylabel(a5,'Instances []');
-%     title(a5,"Cross Track Error Histogram for L_d = 2 m");
-% end
-% 
-% end
-
-
-% % Part C 2
-% 
-% Qmin = [-inf,-inf,-inf,-pi/4,-2]';
-% Qmax = -Qmin;
-% Umin = [Qmin(4),Qmin(5)]';
-% Umax = -Umin;
-% L = 2.5;
-% tau_gamma = 0.0;
-% tau_v = 0.0;
-% 
-% % a = 0: 0.01 : 2*pi;  % angle step for points on circular path 
-% % xPath = 9 + 5*sin(a); yPath = 7-5*cos(a);
-% 
-% 
-% xPath= [linspace(0,10),linspace(10,10),linspace(10,20)];
-% yPath= [linspace(0,0),linspace(0,5),linspace(5,5)];
-% 
-% 
-% 
-% % x y theta gamma v
-% Q0 = [0;0;0;0;0];
-% % gammaD VD
-% U0 = [0;1];
-% Q = Q0;
-% U = U0;
-% 
-% timeToRun = 60;
-% numTimesteps = timeToRun/DT;
-% integrationStepsPerTimeStep = DT/dt;
-% numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
-% QAll = zeros((numIntegrationSteps),length(Q));
-% % 
-% % inputCommandMat = [0,1,0;
-% %                    Umax(1),1,1;
-% %                    -Umax(1),1,11;
-% %                    0,0,21];
-% % [commandMat] = movementCommands(timeToRun,DT,inputCommandMat);
-% 
-% f2 = figure();
-% a2 = axes(f2);
-% hold on;
-% axis equal
-% plot(a2,xPath,yPath,'--','LineWidth',1,'DisplayName','Desired Path');
-% 
-% 
-% 
-% f3 = figure();
-% a3 = axes(f3);
-% hold on;
-% 
-% f4 = figure();
-% a4 = axes(f4);
-% hold on;
-% 
-% 
-% 
-% LdMat = [0.5:0.5:3.5];
-% VMat = [1,2];
-% colorMat = ['rgbmckyw'];
-% for i = 1:length(VMat)
-%     color =colorMat(i);
-% path = [xPath;yPath];
-% crossTrackErrorMat = zeros(numTimesteps,2);
-% %Ld = LdMat(i);
-% Ld = 2;
-% Q=Q0;
-% for j = 1:numTimesteps
-%      [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,path);
-%     crossTrackErrorMat(j,1)=crossTrackError;
-%     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
-%     if endDistance<0.35
-%         QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
-%         crossTrackErrorMat=crossTrackErrorMat(1:j,:);
-%         break
-%     end
-%     V = VMat(i);
-%     U = [gammaD;V];
-%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
-%     Q = QNext(end,:)';
-%     QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
-% end
-% 
-% 
-% lineLength = linspace(0,1);
-% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
-% hold on;
-% 
-% 
-% theta = linspace(0,2*pi)';
-% %desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
-% %plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
-% 
-% plot(a2,QAll(:,1),QAll(:,2)-((V-1)/8),'LineWidth',1.5,'DisplayName',strcat("Path for: L_d = ",num2str(Ld)));
-% 
-% %plot(a2,thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Ending Direction of Travel');
-% %scatter(a2,Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
-% %scatter(a2,QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
-% 
-% % plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
-% % plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
-% % plot(desiredPath(:,1),desiredPath(:,2),'--','LineWidth',1,'DisplayName','Desired Path')
-% 
-% 
-% xlabel(a2,'X []');
-% ylabel(a2,'Y []');
-% title(a2,"Comparing L_d Effects on Path");
-% 
-% legend(a2)
-% 
-% 
-% %plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,1),DisplayName='Cross Track Error From Given Points')
-% plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,2),DisplayName=strcat("Cross Track Error  for: V = ",num2str(V)))
-% 
-% xlabel(a3,'Time [s]');
-% ylabel(a3,'Cross Track Error [m]');
-% title(a3,"Cross Track Error vs. Time");
-% 
-% legend(a3)
-% 
-% 
-% bar(a4, strcat("Max for: L_d = ",num2str(V)), max(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("Mean for: L_d = ",num2str(V)), mean(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("95% for: L_d = ",num2str(V)), prctile(crossTrackErrorMat(:,2),95),color)
-% bar(a4, strcat("RMS for: L_d = ",num2str(V)), rms(crossTrackErrorMat(:,2)),color)
-% ylabel(a4,'Cross Track Error [m]');
-% title(a4,"Cross Track Error Statistics for Various V");
-% 
-% % if Ld == 2
-% %     f5 = figure();
-% %     a5 = axes(f5);
-% %     hold on;
-% %     histogram(crossTrackErrorMat(:,2))
-% %     xlabel(a5,'Cross Track Error [m]');
-% %     ylabel(a5,'Instances []');
-% %     title(a5,"Cross Track Error Histogram for L_d = 2 m");
-% % end
-% 
-% end
-
-
-
-% Part D
-
-
-
-% a = 0: 0.01 : 2*pi;  % angle step for points on circular path 
-% xPath = 9 + 5*sin(a); yPath = 7-5*cos(a);
 
 
 xPath= [linspace(0,10),linspace(10,10),linspace(10,20)];
 yPath= [linspace(0,0),linspace(0,5),linspace(5,5)];
 
-Qmin = [-inf,-inf,-inf,-pi/4,-1]';
+% robot parameters
+gamma_max = pi/3;
+Qmin = [-inf,-inf,-inf,-gamma_max,-1]';
 Qmax = -Qmin;
 Umin = [Qmin(4),Qmin(5)]';
 Umax = -Umin;
-L = 2.5;
+L = 3;
 tau_gamma = 0.0;
 tau_v = 0.0;
 
@@ -421,59 +28,348 @@ U0 = [0;1];
 Q = Q0;
 U = U0;
 
-timeToRun = 60;
+Ld = 1;
+
+% sim parameters
+
+timeToRun = 400;
 numTimesteps = timeToRun/DT;
 integrationStepsPerTimeStep = DT/dt;
 numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
 QAll = zeros((numIntegrationSteps),length(Q));
 
-f2 = figure();
-a2 = axes(f2);
-hold on;
-axis equal
-plot(a2,xPath,yPath,'--','LineWidth',1,'DisplayName','Desired Path');
+% field paramters
 
-f3 = figure();
-a3 = axes(f3);
-hold on;
+N = 10;
+RL = 20;
+W = 2.5;
+HUGE = 10^100;
+Q0 = [-3*W;RL/2;0;0;0];
+Qend = [-3*W;RL/2;0;0;0];
 
-f4 = figure();
-a4 = axes(f4);
-hold on;
+Rmin = L/tan(gamma_max);
 
-f5 = figure();
-a5 = axes(f5);
-hold on;
+DMAT = nan(2+3*N);
+noFinalPos = 1;
 
-LdMat = [0.5:0.5:3.5];
-colorMat = ['rgbmckyw'];
-tauMat = [0,0;0.15,0.5;0.3,0.5;0,0;0.15,0.5;0.3,0.5];
-gammaLimMat = [-pi/4,-pi/4,-pi/4,-deg2rad(35),-deg2rad(35),-deg2rad(35),];
-for i = 1:6
 
-Ld = 2;
-    color =colorMat(i);
-path = [xPath;yPath];
-crossTrackErrorMat = zeros(numTimesteps,2);
+x_i = Q0(1);
+y_i = Q0(2);
+x_f = Qend(1);
+y_f = Qend(2);
+x = [x_i, (((2:N+1)-1)*W-1.5*W),(((2:N+1)-1)*W-1.5*W),(((2:N+1)-1)*W-1.5*W),x_f];
+y = [y_i,(2:N+1)*0,(2:N+1)*0+RL,repmat(RL/2,[1,N]),y_f];
+xy = [x',y'];
+for i =1:length(DMAT)
+    DMAT(i,i) = 0;
+end
+for i=2:N+1
 
-tau_gamma = tauMat(i,1);
-tau_v = tauMat(i,1);
 
-Umin(1) = gammaLimMat(i);
-Umax = -Umin;
+end
+for i=2:N+1
+    
+    for j=N+2:2*N+1
+        if (j-i)==N
+            DMAT(i,j)=0;
+            DMAT(j,i)=0;
+            DMAT(i+2*N,i)=0;
+            DMAT(i,i+2*N)=0;
+            DMAT(i+2*N,i+N)=0;
+            DMAT(i+N,i+2*N)=0;
+            % DMAT(i+2*N,j+2*N)=0;
+            % DMAT(j+2*N,i+2*N)=0;
+        else
+            DMAT(i,j)=HUGE;
+            DMAT(j,i)=HUGE;
+        end
+    end
+end
 
-% Qmin = [-inf,-inf,-inf,-pi/4,-1]';
+
+for i=2:N
+    for j=i+1:N+1
+        d = abs(i-j);
+        if (Rmin<=d*W/2)
+            DMAT(i,j) = Rmin*pi+(d-1)*W;
+        else
+            gamma = acos(1-((2*Rmin+d*W)^2)/(8*Rmin^2));
+            DMAT(i,j) = (3*pi-2*gamma)*Rmin;% + HUGE;% forcing it to
+            % always choose pi turns for testing current
+            % path generation code
+        end
+        DMAT(j,i) = DMAT(i,j);
+        DMAT(i+N,j+N) = DMAT(i,j);
+        DMAT(j+N,i+N) = DMAT(i,j);
+    end
+end
+for i=2:2*N+1
+    if i==2 || i==N+2   % based on currrent configuration of start and end
+        % want to prevent the robot from cutting through fields
+        % so must start or return from top/bottom of the first row but
+        % I dont want to completly prevent the option so I only add 100
+        % rather than HUGE the orginal distance is about 18
+        DMAT(1,i) = abs(x(1)-x(i))+abs(y(1)-y(i));
+        DMAT(i,1) = DMAT(1,i);
+        DMAT(3*N+2,i)=abs(x(2*N+2)-x(i))+abs(y(2*N+2)-y(i));
+        DMAT(i,3*N+2)=DMAT(3*N+2,i);
+    else
+        DMAT(1,i) = abs(x(1)-x(i))+abs(y(1)-y(i))+100;
+        DMAT(i,1) = DMAT(1,i);
+        DMAT(3*N+2,i)=abs(x(2*N+2)-x(i))+abs(y(2*N+2)-y(i))+100;
+        DMAT(i,3*N+2)=DMAT(3*N+2,i);
+    end
+end
+DMAT(1,3*N+2) = HUGE;
+DMAT(3*N+2,1) = HUGE;
+DMAT(isnan(DMAT)) = HUGE;
+
+t = cputime;
+
+resultStruct = tspof_ga('xy',xy,'DMAT',DMAT,'SHOWPROG',false,'SHOWRESULT',true,'SHOWWAITBAR',true);
+
+E = cputime-t
+
+if noFinalPos
+    route = [1 resultStruct.optRoute];
+
+
+else
+    route = [1 resultStruct.optRoute 3*N+2];
+
+
+end
+
+resultStruct.minDist
+
+waypointsX = [];
+waypointsY = [];
+
+
+
+% waypoint path gen from opt route
+for i=1:length(route)-1
+    clear next_segmentX next_segmentY
+    if x(route(i))==x(route(i+1))
+        % check if straight segment
+        next_segmentX = linspace(x(route(i)),x(route(i+1)));
+        next_segmentY = linspace(y(route(i)),y(route(i+1)));
+        waypointsX = [waypointsX, next_segmentX];
+        waypointsY = [waypointsY, next_segmentY];
+    elseif y(route(i))==y(route(i+1))
+        % check for turn
+        % check type of turn
+        d = abs(route(i)-route(i+1));
+        if (Rmin<=d*W/2)
+            % pi turn
+            if y(route(i))==RL
+                % top row turn
+                if x(route(i))<x(route(i+1))
+                    % turning right
+                    theta1 = linspace(pi,pi/2);
+                    theta2 = linspace(pi/2,0);
+                    arcx1 = x(route(i))+Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    lengthx = linspace(x(route(i))+ Rmin,x(route(i+1)) - Rmin);
+                    lengthy = linspace(y(route(i))+ Rmin,y(route(i+1)) + Rmin);
+                    arcx2 = x(route(i+1))-Rmin + Rmin*cos(theta2);
+                    arcy2 = y(route(i+1)) + Rmin*sin(theta2);
+                    next_segmentX = [arcx1,lengthx,arcx2];
+                    next_segmentY = [arcy1,lengthy,arcy2];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];
+                elseif x(route(i))>x(route(i+1))
+                    % turn left
+                    theta1 = linspace(0,pi/2);
+                    theta2 = linspace(pi/2,pi);
+                    arcx1 = x(route(i))-Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    lengthx = linspace(x(route(i))- Rmin,x(route(i+1)) + Rmin);
+                    lengthy = linspace(y(route(i))+ Rmin,y(route(i+1)) + Rmin);
+                    arcx2 = x(route(i+1))+Rmin + Rmin*cos(theta2);
+                    arcy2 = y(route(i+1)) + Rmin*sin(theta2);
+                    next_segmentX = [arcx1,lengthx,arcx2];
+                    next_segmentY = [arcy1,lengthy,arcy2];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];
+                else
+                    print('error in pi turn top row: 1')
+                end
+            elseif y(route(i))==0
+                % bottom row
+                if x(route(i))<x(route(i+1))
+                    % turning left
+                    theta1 = linspace(pi,3*pi/2);
+                    theta2 = linspace(3*pi/2,2*pi);
+                    arcx1 = x(route(i))+Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    lengthx = linspace(x(route(i))+ Rmin,x(route(i+1)) - Rmin);
+                    lengthy = linspace(y(route(i))- Rmin,y(route(i+1)) - Rmin);
+                    arcx2 = x(route(i+1))-Rmin + Rmin*cos(theta2);
+                    arcy2 = y(route(i+1)) + Rmin*sin(theta2);
+                    next_segmentX = [arcx1,lengthx,arcx2];
+                    next_segmentY = [arcy1,lengthy,arcy2];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];
+                elseif x(route(i))>x(route(i+1))
+                    % turn right
+                    theta1 = linspace(2*pi,3*pi/2);
+                    theta2 = linspace(3*pi/2,pi);
+                    arcx1 = x(route(i))-Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    lengthx = linspace(x(route(i))- Rmin,x(route(i+1)) + Rmin);
+                    lengthy = linspace(y(route(i))- Rmin,y(route(i+1)) - Rmin);
+                    arcx2 = x(route(i+1))+Rmin + Rmin*cos(theta2);
+                    arcy2 = y(route(i+1)) + Rmin*sin(theta2);
+                    next_segmentX = [arcx1,lengthx,arcx2];
+                    next_segmentY = [arcy1,lengthy,arcy2];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];
+                else
+                    print('error in pi turn bottom row: 2')
+                end
+            end
+        else
+            % omega turn
+            if y(route(i))==RL
+                % top row turn
+                if x(route(i))<x(route(i+1))
+                    % turning right
+                    gamma = acos(1-((2*Rmin+d*W)^2)/(8*Rmin^2));
+                    alpha = (pi-gamma)/2;
+                    theta1 = linspace(0,alpha);
+                    theta2 = linspace(pi+alpha,0-alpha);
+                    theta3 = linspace(pi-alpha,pi);
+                    arcx1 = x(route(i))-Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    arcx2 = (x(route(i))-Rmin+Rmin*cos(alpha))+Rmin*cos(alpha)+Rmin*cos(theta2);
+                    arcy2 = (y(route(i))+ Rmin*sin(alpha))+Rmin*sin(alpha)+Rmin*sin(theta2);
+                    arcx3 = x(route(i+1))+Rmin+Rmin*cos(theta3);
+                    arcy3 = y(route(i+1))+Rmin*sin(theta3);
+                    next_segmentX = [arcx1,arcx2,arcx3];
+                    next_segmentY = [arcy1,arcy2,arcy3];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];
+                elseif x(route(i))>x(route(i+1))
+                    % turn left
+                    gamma = acos(1-((2*Rmin+d*W)^2)/(8*Rmin^2));
+                    alpha = (pi-gamma)/2;
+                    theta1 = linspace(pi,pi-alpha);
+                    theta2 = linspace(0-alpha,pi+alpha);
+                    theta3 = linspace(alpha,0);
+                    arcx1 = x(route(i))+Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    arcx2 = (x(route(i))+Rmin+Rmin*cos(pi-alpha))-Rmin*cos(alpha)+Rmin*cos(theta2);
+                    arcy2 = (y(route(i))+ Rmin*sin(pi-alpha))+Rmin*sin(alpha)+Rmin*sin(theta2);
+                    arcx3 = x(route(i+1))-Rmin+Rmin*cos(theta3);
+                    arcy3 = y(route(i+1))+Rmin*sin(theta3);
+                    next_segmentX = [arcx1,arcx2,arcx3];
+                    next_segmentY = [arcy1,arcy2,arcy3];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];                    
+                else
+                    print('error in omega turn top row: 3')
+                end
+            elseif y(route(i))==0
+                % bottom row
+                if x(route(i))<x(route(i+1))
+                    % turning left
+                    gamma = acos(1-((2*Rmin+d*W)^2)/(8*Rmin^2));
+                    alpha = (pi-gamma)/2;
+                    theta1 = linspace(0,-alpha);
+                    theta2 = linspace(pi-alpha,2*pi+alpha);
+                    theta3 = linspace(pi+alpha,pi);
+                    arcx1 = x(route(i))-Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    arcx2 = (x(route(i))-Rmin+Rmin*cos(-alpha))+Rmin*cos(alpha)+Rmin*cos(theta2);
+                    arcy2 = (y(route(i))+ Rmin*sin(-alpha))-Rmin*sin(alpha)+Rmin*sin(theta2);
+                    arcx3 = x(route(i+1))+Rmin+Rmin*cos(theta3);
+                    arcy3 = y(route(i+1))+Rmin*sin(theta3);
+                    next_segmentX = [arcx1,arcx2,arcx3];
+                    next_segmentY = [arcy1,arcy2,arcy3];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];
+                elseif x(route(i))>x(route(i+1))
+                    % turn right
+                    gamma = acos(1-((2*Rmin+d*W)^2)/(8*Rmin^2));
+                    alpha = (pi-gamma)/2;
+                    theta1 = linspace(pi,pi+alpha);
+                    theta2 = linspace(alpha,-pi-alpha);
+                    theta3 = linspace(-alpha,0);
+                    arcx1 = x(route(i))+Rmin+ Rmin*cos(theta1);
+                    arcy1 = y(route(i))+ Rmin*sin(theta1);
+                    arcx2 = (x(route(i))+Rmin+Rmin*cos(pi+alpha))-Rmin*cos(alpha)+Rmin*cos(theta2);
+                    arcy2 = (y(route(i))+ Rmin*sin(pi+alpha))-Rmin*sin(alpha)+Rmin*sin(theta2);
+                    arcx3 = x(route(i+1))-Rmin+Rmin*cos(theta3);
+                    arcy3 = y(route(i+1))+Rmin*sin(theta3);
+                    next_segmentX = [arcx1,arcx2,arcx3];
+                    next_segmentY = [arcy1,arcy2,arcy3];
+                    waypointsX = [waypointsX, next_segmentX];
+                    waypointsY = [waypointsY, next_segmentY];                    
+
+                else
+                    print('error in omega turn bottom row: 4')
+                end
+            end
+        end
+    else
+        if i==1
+            startOrientation = Q0(3);
+            endOrientation = atan2(y(route(i+2))-y(route(i+1)),x(route(i+2))-x(route(i+1)));
+        else
+        
+            startOrientation = atan2(y(route(i))-y(route(i-1)),x(route(i))-x(route(i-1)));
+            endOrientation = atan2(y(route(i+1))-y(route(i)),x(route(i+1))-x(route(i)));
+
+        end
+        startPose = [x(route(i)) y(route(i)) startOrientation]; goalPose= [ x(route(i+1)) y(route(i+1)) endOrientation];
+        dubConnObj = dubinsConnection;
+        dubConnObj.MinTurningRadius = Rmin;
+        [pathSegObj, pathCosts] =connect(dubConnObj,startPose,goalPose);
+
+        lengths = 0:pathSegObj{1}.Length/100:pathSegObj{1}.Length;
+        poses = interpolate(pathSegObj{1},lengths);
+        next_segmentX = poses(:,1)';
+        next_segmentY = poses(:,2)';
+        % figure
+        % show(pathSegObj{1}); axis equal;
+        
+        % start finish paths
+        % next_segmentX = linspace(x(route(i)),x(route(i+1)));
+        % next_segmentY = linspace(y(route(i)),y(route(i+1)));
+        waypointsX = [waypointsX, next_segmentX];
+        waypointsY = [waypointsY, next_segmentY];
+    end
+end
+% figure(2)
+% clf
+% hold on
+% plot(waypointsX,waypointsY)
+
+%% 
+
+% timeToRun = 400;
+% numTimesteps = timeToRun/DT;
+% integrationStepsPerTimeStep = DT/dt;
+% numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+% QAll = zeros((numIntegrationSteps),length(Q));
+% 
+% gamma_max = pi/6;
+% Qmin = [-inf,-inf,-inf,-gamma_max,-1]';
 % Qmax = -Qmin;
 % Umin = [Qmin(4),Qmin(5)]';
 % Umax = -Umin;
 
-%Ld = LdMat(i);
+path = [waypointsX;waypointsY];
+crossTrackErrorMat = zeros(numTimesteps,2);
 Q=Q0;
+pointOnPath = 1;
 for j = 1:numTimesteps
-     [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,path);
+    [slicedPath,pointOnPath] = pathSlicer(pointOnPath,path,Ld,Q);
+     [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,slicedPath);
     crossTrackErrorMat(j,1)=crossTrackError;
     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
-    if endDistance<0.35
+    if j>numTimesteps/10 && endDistance<0.35 
         QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
         crossTrackErrorMat=crossTrackErrorMat(1:j,:);
         break
@@ -483,63 +379,117 @@ for j = 1:numTimesteps
     Q = QNext(end,:)';
     QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
 end
+figure(2)
+clf
+hold on
+plot(waypointsX,waypointsY)
+scatter(x(route(:)),y(route(:)),'rx')
+plot(QAll(:,1),QAll(:,2))
+legend('path','cities','robot')
+axis equal
+
+%
+% f2 = figure();
+% a2 = axes(f2);
+% hold on;
+% axis equal
+% plot(a2,xPath,yPath,'--','LineWidth',1,'DisplayName','Desired Path');
+%
+% f3 = figure();
+% a3 = axes(f3);
+% hold on;
+%
+% f4 = figure();
+% a4 = axes(f4);
+% hold on;
+%
+% f5 = figure();
+% a5 = axes(f5);
+% hold on;
+%
+% LdMat = [0.5:0.5:3.5];
+% colorMat = ['rgbmckyw'];
+% tauMat = [0,0;0.15,0.5;0.3,0.5;0,0;0.15,0.5;0.3,0.5];
+% gammaLimMat = [-pi/4,-pi/4,-pi/4,-deg2rad(35),-deg2rad(35),-deg2rad(35),];
+% for i = 1:6
+%
+% Ld = 2;
+%     color =colorMat(i);
+% path = [xPath;yPath];
+% crossTrackErrorMat = zeros(numTimesteps,2);
+%
+% tau_gamma = tauMat(i,1);
+% tau_v = tauMat(i,1);
+%
+% Umin(1) = gammaLimMat(i);
+% Umax = -Umin;
+%
+%
+% Q=Q0;
+% for j = 1:numTimesteps
+%      [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,path);
+%     crossTrackErrorMat(j,1)=crossTrackError;
+%     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
+%     if endDistance<0.35
+%         QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
+%         crossTrackErrorMat=crossTrackErrorMat(1:j,:);
+%         break
+%     end
+%     U = [gammaD;1];
+%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+%     Q = QNext(end,:)';
+%     QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
+% end
+%
+%
+% lineLength = linspace(0,1);
+% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+% hold on;
+%
+%
+% theta = linspace(0,2*pi)';
+%
+% limStringMat = ["\pi/4";"35\circ"];
+% plot(a2,QAll(:,1),QAll(:,2),'LineWidth',1.5,'DisplayName',strcat("Path for: \tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)));
+%
+% xlabel(a2,'X []');
+% ylabel(a2,'Y []');
+% title(a2,"Comparing L_d Effects on Path");
+%
+% legend(a2)
+%
+%
+% %plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,1),DisplayName='Cross Track Error From Given Points')
+% plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,2),'LineWidth',1.5,DisplayName=strcat("Cross Track Error for: \tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)))
+%
+% xlabel(a3,'Time [s]');
+% ylabel(a3,'Cross Track Error [m]');
+% title(a3,"Cross Track Error vs. Time");
+%
+% legend(a3)
+%
+% if any([i==1,i==4])
+% bar(a4, strcat("\tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)), max(crossTrackErrorMat(:,2)),color)
+% ylabel(a4,'Cross Track Error [m]');
+% title(a4,"Cross Track Error for Changing \gamma_{lim}");
+% end
+% if any([i==1,i==2, i==3])
+% bar(a5, strcat("\tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)), max(crossTrackErrorMat(:,2)),color)
+% ylabel(a5,'Cross Track Error [m]');
+% title(a5,"Cross Track Error for Changing \tau_\gamma, \tau_v");
+% end
+% end
+function [slicedPath,newPointOnPath] = pathSlicer(pointOnPath,path,Ld,Q)
+N = min(100,length(path)-pointOnPath);
+%N =100
+slicedPath=path(:,pointOnPath:pointOnPath+N);
+squaredDistanceMat = sum((slicedPath-Q(1:2)).^2);
+[M,I] = min(squaredDistanceMat);
+newPointOnPath = pointOnPath+I-1;
 
 
-lineLength = linspace(0,1);
-thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
-hold on;
 
-
-theta = linspace(0,2*pi)';
-%desiredPath = rD*[cos(theta),sin(theta)]+[8,10];
-%plot(desiredPath(:,1),desiredPath(:,2),'DisplayName','Desired Path')
-
-limStringMat = ["\pi/4";"35\circ"];
-plot(a2,QAll(:,1),QAll(:,2),'LineWidth',1.5,'DisplayName',strcat("Path for: \tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)));
-
-%plot(a2,thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Ending Direction of Travel');
-%scatter(a2,Q0(1),Q0(2),100,'o','DisplayName','Initial Position');
-%scatter(a2,QAll(end,1),QAll(end,2),100,'*','DisplayName','Final Position');
-
-% plot(QAll(:,1),QAll(:,2),'LineWidth',2,'DisplayName','Path');
-% plot(thetaLine(:,1),thetaLine(:,2),'LineWidth',2,'DisplayName','Direction of Travel');
-% plot(desiredPath(:,1),desiredPath(:,2),'--','LineWidth',1,'DisplayName','Desired Path')
-
-
-xlabel(a2,'X []');
-ylabel(a2,'Y []');
-title(a2,"Comparing L_d Effects on Path");
-
-legend(a2)
-
-
-%plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,1),DisplayName='Cross Track Error From Given Points')
-plot(a3,[0:DT:(length(crossTrackErrorMat)-1)*DT],crossTrackErrorMat(:,2),'LineWidth',1.5,DisplayName=strcat("Cross Track Error for: \tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)))
-
-xlabel(a3,'Time [s]');
-ylabel(a3,'Cross Track Error [m]');
-title(a3,"Cross Track Error vs. Time");
-
-legend(a3)
-
-if any([i==1,i==4])
-bar(a4, strcat("\tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)), max(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("Mean for: L_d = ",num2str(Ld)), mean(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("95% for: L_d = ",num2str(Ld)), prctile(crossTrackErrorMat(:,2),95),color)
-% bar(a4, strcat("RMS for: L_d = ",num2str(Ld)), rms(crossTrackErrorMat(:,2)),color)
-ylabel(a4,'Cross Track Error [m]');
-title(a4,"Cross Track Error for Changing \gamma_{lim}");
 end
-if any([i==1,i==2, i==3])
-bar(a5, strcat("\tau_\gamma = ",num2str(tau_gamma), ", \tau_v = ", num2str(tau_v),", \gamma_{lim} = ",limStringMat(floor(i/3.1)+1)), max(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("Mean for: L_d = ",num2str(Ld)), mean(crossTrackErrorMat(:,2)),color)
-% bar(a4, strcat("95% for: L_d = ",num2str(Ld)), prctile(crossTrackErrorMat(:,2),95),color)
-% bar(a4, strcat("RMS for: L_d = ",num2str(Ld)), rms(crossTrackErrorMat(:,2)),color)
-ylabel(a5,'Cross Track Error [m]');
-title(a5,"Cross Track Error for Changing \tau_\gamma, \tau_v");
-end
-end
-
 
 function [commandMat] = movementCommands(timeToRun,DT,inputCommandMat)
 %specify input commands as a matrix where the first and second columns are
