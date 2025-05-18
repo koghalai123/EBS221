@@ -25,7 +25,7 @@ k=2*robotDistanceVector(2)/Ld^2;
 gammaD = atan(k*L);
 endDistance=distanceMatRobot(end);
 crossTrackError=Dmin;
-numInterpolatedPoints = 50;
+numInterpolatedPoints = 200;
 interpolationIndices = linspace(0,200,numInterpolatedPoints);
 if minPointIndex==1
     nearestPathX =xPath([minPointIndex,minPointIndex,minPointIndex+1]);
