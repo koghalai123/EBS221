@@ -12,16 +12,17 @@ xPath= [linspace(0,10),linspace(10,10),linspace(10,20)];
 yPath= [linspace(0,0),linspace(0,5),linspace(5,5)];
 
 % robot parameters
-gamma_max = pi/6;
+gamma_max = pi/3;
 Qmin = [-inf,-inf,-inf,-gamma_max,-1]';
 Qmax = -Qmin;
-Umin = [Qmin(4),Qmin(5)]';
-Umax = -Umin;
+
 L = 3;
 tau_gamma = 0.0;
 tau_v = 0.0;
 
 % gammaD VD
+Umin = [Qmin(4),Qmin(5)]';
+Umax = -Umin;
 U0 = [0;1];
 U = U0;
 
@@ -41,7 +42,7 @@ W = 2.5;
 HUGE = 10^100;
 % x y theta gamma v
 
-Q0 = [-3*W;RL/2;-pi/2;0;0];
+Q0 = [-3*W;RL/2;0;0;0];
 Qend = [-3*W;RL/2;0;0;0];
 Q = Q0;
 
@@ -586,6 +587,13 @@ end
 % plot(waypointsX,waypointsY)
 
 VD = 1;
+Umin = [-pi/6,Qmin(5)]';
+Umax = -Umin;
+U0 = [0;1];
+U = U0;
+
+
+
 path = [waypointsX;waypointsY];
 crossTrackErrorMat = zeros(numTimesteps,2);
 Q=Q0;
