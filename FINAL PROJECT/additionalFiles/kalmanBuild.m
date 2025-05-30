@@ -15,9 +15,9 @@ B = [dt^2/2;dt]; %input control matrix:  expected effect of the input acccelerat
 H = [1,0]; % measurement matrix
 
 %% define main variables
-u = 1.5; % define acceleration magnitude
+u = 0;%1.5; % define acceleration magnitude
 X= [0; 0]; %initialized state--it has two components: [position; velocity]
-Accel_noise_mag = 5; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
+Accel_noise_mag = 0;%5; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
 Q = [(0+Accel_noise_mag^2)*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 Sensor_noise_mag = 10;  %measurement noise: (stdv of location, in meters)
@@ -39,7 +39,7 @@ for t = 0 : dt: duration
     X = F*X+B*(u+w);
     % Generate what the sensor sees; noise is included.
     v = Sensor_noise_mag*randn;
-    z = H*X+v;
+    z = X(1)+v;
     
     % Prediction phase
     % predict next state of the object with the last state and predicted motion.
