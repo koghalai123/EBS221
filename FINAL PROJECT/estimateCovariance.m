@@ -1,8 +1,4 @@
-
-
-close all;
-clear;
-
+function [odoCov,GPSCov] = estimateCovariance()
 
 global dt DT
 
@@ -40,21 +36,21 @@ for i = 1:n
     end
 end
 
-covElements = reshape(covStorage,round(n/measurementInterval),m^2);
-f1 = figure();
-a1 = axes(f1);
-hold on;
-for i = 1:size(covElements,2)
-plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
-yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
-
-end
-title("Covariance for Odometry");
-xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
-ylabel("Covariance");
-legend
-%cov(observations)
-
+% covElements = reshape(covStorage,round(n/measurementInterval),m^2);
+% f1 = figure();
+% a1 = axes(f1);
+% hold on;
+% for i = 1:size(covElements,2)
+% plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
+% yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
+% 
+% end
+% title("Covariance for Odometry");
+% xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
+% ylabel("Covariance");
+% legend
+% %cov(observations)
+odoCov = reshape(covStorage(end,:,:),[m,m,1]);
 
 
 
@@ -76,58 +72,24 @@ for i = 1:n
         covStorage(i/measurementInterval,:,:) = cov(observations(1:i,:));
     end
 end
-covElements = reshape(covStorage,round(n/measurementInterval),m^2);
-f1 = figure();
-a1 = axes(f1);
-hold on;
-for i = 1:size(covElements,2)
-plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
-yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
+% covElements = reshape(covStorage,round(n/measurementInterval),m^2);
+% f1 = figure();
+% a1 = axes(f1);
+% hold on;
+% for i = 1:size(covElements,2)
+% plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
+% yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
+% 
+% end
+% 
+% title("Covariance for GPS");
+% xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
+% ylabel("Covariance");
+% legend
+GPSCov = reshape(covStorage(end,:,:),[m,m,1]);
+
 
 end
-
-title("Covariance for GPS");
-xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
-ylabel("Covariance");
-legend
-
-
-
-
-
-m = 3;
-n = 10000;
-measurementInterval = 100;
-observations = zeros(n,m);
-covStorage = zeros(round(n/measurementInterval),m,m);
-for i = 1:n
-    % gammaD VD
-    U = U0+rand(2,1);
-    % x y theta gamma v
-    Q = [0,0,0,0,0]+rand(5,1)';
-    [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( Q(1), Q(2), Q(3) );
-    observations(i,:) = Q(1:3)-[ xGPS, yGPS, theta_GPS ];
-    if mod(i,measurementInterval)==0
-        covStorage(i/measurementInterval,:,:) = cov(observations(1:i,:));
-    end
-end
-covElements = reshape(covStorage,round(n/measurementInterval),m^2);
-f1 = figure();
-a1 = axes(f1);
-hold on;
-for i = 1:size(covElements,2)
-plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
-yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
-
-end
-
-title("Covariance for GPS");
-xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
-ylabel("Covariance");
-legend
-
-
-
 
 
 
