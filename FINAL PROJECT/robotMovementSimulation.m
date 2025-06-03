@@ -4,8 +4,8 @@ clear;
 
 global dt DT
 
-dt = 0.001;
-DT = 0.01;
+dt = 0.01;
+DT = 0.1;
 
 
 xPath= [linspace(0,10),linspace(10,10),linspace(10,20)];

@@ -4,44 +4,44 @@ clear;
 
 global dt DT
 
-% %test
-% dt = 0.001;
-% DT = 0.1;
-% 
-% Qmin = [-inf,-inf,-inf,-inf,-inf]';
-% Qmax = -Qmin;
-% Umin = [-inf,-inf]';
-% Umax = -Umin;
-% L = 1;
-% tau_gamma = 0.01;
-% tau_v = 0.01;
-% 
-% % x y theta gamma v
-% Q0 = [0;0;0;0;0];
-% % gammaD VD
-% U0 = [1;1];
-% Q = Q0;
-% U = U0;
-% 
-% numTimesteps = 10;
-% numIntegrationSteps = numTimesteps*DT/dt;
-% 
-% QAll = zeros(numIntegrationSteps,length(Q));
-% for j = 1:numTimesteps
-%     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
-%     Q = QNext(end,:)';
-%     QAll((j-1)*100+1:(j-1)*100+100,:) = QNext;
-% end
-% 
-% f1 = figure();
-% a1 = axes(f1);
-% lineLength = linspace(0,1);
-% thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
-% hold on;
-% plot(QAll(:,1),QAll(:,2),'DisplayName','Path');
-% plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
-% legend
-% axis equal
+%test
+dt = 0.001;
+DT = 0.1;
+
+Qmin = [-inf,-inf,-inf,-inf,-inf]';
+Qmax = -Qmin;
+Umin = [-inf,-inf]';
+Umax = -Umin;
+L = 1;
+tau_gamma = 0.01;
+tau_v = 0.01;
+
+% x y theta gamma v
+Q0 = [0;0;0;0;0];
+% gammaD VD
+U0 = [1;1];
+Q = Q0;
+U = U0;
+
+numTimesteps = 10;
+numIntegrationSteps = numTimesteps*DT/dt;
+
+QAll = zeros(numIntegrationSteps,length(Q));
+for j = 1:numTimesteps
+    [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    Q = QNext(end,:)';
+    QAll((j-1)*100+1:(j-1)*100+100,:) = QNext;
+end
+
+f1 = figure();
+a1 = axes(f1);
+lineLength = linspace(0,1);
+thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
+hold on;
+plot(QAll(:,1),QAll(:,2),'DisplayName','Path');
+plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+legend
+axis equal
 
 
 

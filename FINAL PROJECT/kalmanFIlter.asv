@@ -79,8 +79,8 @@ numIntegrationSteps = numTimesteps*DT/dt;
 
 QAll = zeros(numIntegrationSteps,length(Q));
 for j = 1:numTimesteps
-    subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3;h1;h2;h3];
-    subsVecNum = [Q(1:3);U;tau_v;tau_gamma;DT;L;0;0;0;0;0;0];
+    subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3];
+    subsVecNum = [Q(1:3);U;tau_v;tau_gamma;DT;L;0;0;0];
     vel = Q(5);
     theta = Q(3);
     w = Accel_noise_mag * randn(3,1);
@@ -100,8 +100,7 @@ for j = 1:numTimesteps
     
     nu = z-Q_estimate;
     K = P*Hq'*(Hq*P*Hq'+Hw*disturbanceCov*Hw')^-1;
-    Q_estimate = Q_estimate+K*nu;
-    P = P-K*Hq*P;
+    Q_estimate = Q_estimate+K
 
 
 

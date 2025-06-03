@@ -24,11 +24,12 @@ n = 10000;
 measurementInterval = 100;
 observations = zeros(n,m);
 covStorage = zeros(round(n/measurementInterval),m,m);
+QTrue = [0,0,0,0,0]'+rand(5,1);
 for i = 1:n
     % gammaD VD
     U = U0+rand(2,1);
     % x y theta gamma v
-    Q = [0,0,0,0,0]'+rand(5,1);
+    Q = QTrue;
     [QTrue, QOdo] = robot_odo(Q, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
     observations(i,:) = QTrue(1:m)-QOdo;
     if mod(i,measurementInterval)==0
