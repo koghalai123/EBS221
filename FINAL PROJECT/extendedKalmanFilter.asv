@@ -50,7 +50,7 @@ U = U0;
 
 
 u = rand(2,1); % define acceleration magnitude
-Accel_noise_mag = 1; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
+Accel_noise_mag =0.0001; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
 %Q = [(0+Accel_noise_mag^2)*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 
@@ -60,7 +60,7 @@ B = subs(FuSym,subsVecSym,subsVecNum);
 disturbanceCov = [(0+Accel_noise_mag^2)*(B*B')];
 
 
-Sensor_noise_mag = 1;  %measurement noise: (stdv of location, in meters)
+Sensor_noise_mag = 0.0001;  %measurement noise: (stdv of location, in meters)
 sensorCov = [Sensor_noise_mag^2*(H'*H)];% Compute the covariance matrix from the standard deviation of the measurement noise
 Q_estimate = Q;  %x_estimate of initial location
 P = disturbanceCov; % Initialize covariance matrix P to model covariance
@@ -79,8 +79,8 @@ numIntegrationSteps = numTimesteps*DT/dt;
 
 QAll = zeros(numIntegrationSteps,length(Q));
 for j = 1:numTimesteps
-    subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3];
-    subsVecNum = [Q(1:3);U;tau_v;tau_gamma;DT;L;0;0;0];
+    subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3;h1;h2;h3];
+    subsVecNum = [Q(1:3);U;tau_v;tau_gamma;DT;L;0;0;0;0;0;0];
     vel = Q(5);
     theta = Q(3);
     w = Accel_noise_mag * randn(3,1);
@@ -88,32 +88,34 @@ for j = 1:numTimesteps
     v = Sensor_noise_mag*randn(3,1);
     z = H*Q(1:3)+v;
 
-    Q_estimate =  subs(QNewSym,subsVecSym,subsVecNum);
+    Q_estimate =  double(subs(QNewSym,subsVecSym,subsVecNum));
     %predict next error covariance
-    Fx = subs(FqSym,subsVecSym,subsVecNum);
-    Fu = subs(FuSym,subsVecSym,subsVecNum);
-    Fv = subs(FvSym,subsVecSym,subsVecNum);
+    Fx = double(subs(FqSym,subsVecSym,subsVecNum));
+    Fu = double(subs(FuSym,subsVecSym,subsVecNum));
+    Fv = double(subs(FvSym,subsVecSym,subsVecNum));
 
-    Hw = subs(HwSym,subsVecSym,subsVecNum);
-    Hq = subs(HqSym,subsVecSym,subsVecNum);
-    P = Fx*P*Fx' + Fv*sensorCov*Fv'; %Should be Fv * sensorCov * Fv, but it is the wrong size
+    Hw = double(subs(HwSym,subsVecSym,subsVecNum));
+    Hq = double(subs(HqSym,subsVecSym,subsVecNum));
+    P = double(Fx*P*Fx' + Fv*sensorCov*Fv'); %Should be Fv * sensorCov * Fv, but it is the wrong size
     
-    nu = z-Q_estimate;
-    K = P*Hq'*(Hq*P*Hq'+Hw*disturbanceCov*Hw')^-1;
-    Q_estimate = Q_estimate+K
+    nu = double(z-Q_estimate);
+    K = double(P*Hq'*(Hq*P*Hq'+Hw*disturbanceCov*Hw')^-1);
+    Q_estimate = double(Q_estimate+K*nu);
+    P = double(P-K*Hq*P);
 
 
 
 
-    %Store for plotting
-    X_true = [X_true; X(1)]; %append the new true position
-    X_sensed = [X_sensed; z]; % append the new measurement
-    X_loc_estimate = [X_loc_estimate; X_estimate(1)];
+    
     
 
     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
     Q = QNext(end,:)';
     QAll((j-1)*DT/dt+1:(j-1)*DT/dt+DT/dt,:) = QNext;
+    %Store for plotting
+    Q_true = [Q_true; Q']; %append the new true position
+    Q_sensed = [Q_sensed; z']; % append the new measurement
+    Q_loc_estimate = [Q_loc_estimate; Q_estimate'];
 end
 
 f1 = figure();

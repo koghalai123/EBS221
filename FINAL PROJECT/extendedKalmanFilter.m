@@ -28,6 +28,7 @@ HwSym = jacobian(QNewSym,[noiseSym]);
 
 H = [1,1,1]; % measurement matrix
 
+global dt DT
 
 dt = 0.01;
 DT = 0.1;
@@ -50,71 +51,73 @@ U = U0;
 
 
 u = rand(2,1); % define acceleration magnitude
-Accel_noise_mag = 1; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
+disturbanceMag =0.01; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
 %Q = [(0+Accel_noise_mag^2)*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 
 subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3];
 subsVecNum = [Q(1:3);U;tau_v;tau_gamma;DT;L;0;0;0];
 B = subs(FuSym,subsVecSym,subsVecNum);
-disturbanceCov = [(0+Accel_noise_mag^2)*(B*B')];
+disturbanceCov = [(0+disturbanceMag^2)*(B*B')];
 
 
-Sensor_noise_mag = 1;  %measurement noise: (stdv of location, in meters)
+Sensor_noise_mag = 0.01;  %measurement noise: (stdv of location, in meters)
 sensorCov = [Sensor_noise_mag^2*(H'*H)];% Compute the covariance matrix from the standard deviation of the measurement noise
-Q_estimate = Q;  %x_estimate of initial location
+Q_estimate = Q(1:3);  %x_estimate of initial location
 P = disturbanceCov; % Initialize covariance matrix P to model covariance
 
 %% initialize result variables
 Q_true = []; % Array stores object's TRUE state trajectory
 Q_sensed = []; % Array stores object's SENSED state trajectory
 Q_loc_estimate = []; %  Array stores object's Kalman filter position estimate
-global dt DT
 
 %test
 
 
-numTimesteps = 100;
+numTimesteps = 40;
 numIntegrationSteps = numTimesteps*DT/dt;
 
 QAll = zeros(numIntegrationSteps,length(Q));
+USetPoint = U;
 for j = 1:numTimesteps
-    subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3;h1;h2;h3];
-    subsVecNum = [Q(1:3);U;tau_v;tau_gamma;DT;L;0;0;0;0;0;0];
-    vel = Q(5);
-    theta = Q(3);
-    w = Accel_noise_mag * randn(3,1);
-    % Generate what the sensor sees; noise is included.
+    w = disturbanceMag * randn(3,1);
     v = Sensor_noise_mag*randn(3,1);
-    z = H*Q(1:3)+v;
 
-    Q_estimate =  subs(QNewSym,subsVecSym,subsVecNum);
-    %predict next error covariance
-    Fx = subs(FqSym,subsVecSym,subsVecNum);
-    Fu = subs(FuSym,subsVecSym,subsVecNum);
-    Fv = subs(FvSym,subsVecSym,subsVecNum);
+    U = USetPoint + w(1:2);
+    subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3;h1;h2;h3];
+    subsVecNum = [Q_estimate;U;tau_v;tau_gamma;DT;L;0;0;0;0;0;0];
 
-    Hw = subs(HwSym,subsVecSym,subsVecNum);
-    Hq = subs(HqSym,subsVecSym,subsVecNum);
-    P = Fx*P*Fx' + Fv*sensorCov*Fv'; %Should be Fv * sensorCov * Fv, but it is the wrong size
     
-    nu = z-Q_estimate;
-    K = P*Hq'*(Hq*P*Hq'+Hw*disturbanceCov*Hw')^-1;
-    Q_estimate = Q_estimate+K*nu;
-    P = P-K*Hq*P;
+    z = H'.*Q(1:3)+v;
+
+    Q_estimate =  double(subs(QNewSym,subsVecSym,subsVecNum));
+    %predict next error covariance
+    Fx = double(subs(FqSym,subsVecSym,subsVecNum));
+    Fu = double(subs(FuSym,subsVecSym,subsVecNum));
+    Fv = double(subs(FvSym,subsVecSym,subsVecNum));
+
+    Hw = double(subs(HwSym,subsVecSym,subsVecNum));
+    Hq = double(subs(HqSym,subsVecSym,subsVecNum));
+    P = double(Fx*P*Fx' + Fv*disturbanceCov*Fv');
+    
+    nu = double(z-Q_estimate);
+    K = double(P*Hq'*(Hq*P*Hq'+Hw*sensorCov*Hw')^-1);
+    %Q_estimate = double(Q_estimate+K*nu);
+    P = double(P-K*Hq*P);
 
 
 
 
-    %Store for plotting
-    X_true = [X_true; X(1)]; %append the new true position
-    X_sensed = [X_sensed; z]; % append the new measurement
-    X_loc_estimate = [X_loc_estimate; X_estimate(1)];
+    
     
 
     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
     Q = QNext(end,:)';
     QAll((j-1)*DT/dt+1:(j-1)*DT/dt+DT/dt,:) = QNext;
+    %Store for plotting
+    Q_true = [Q_true; Q']; %append the new true position
+    Q_sensed = [Q_sensed; z']; % append the new measurement
+    Q_loc_estimate = [Q_loc_estimate; Q_estimate'];
 end
 
 f1 = figure();
@@ -122,7 +125,11 @@ a1 = axes(f1);
 lineLength = linspace(0,1);
 thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
 hold on;
-plot(QAll(:,1),QAll(:,2),'DisplayName','Path');
-plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+%plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+
+plot(Q_true(:,1),Q_true(:,2),'DisplayName','True Locations');
+plot(Q_sensed(:,1),Q_sensed(:,2),'DisplayName','Sensed Locations');
+plot(Q_loc_estimate(:,1),Q_loc_estimate(:,2),'DisplayName','Kalman Filtered Locations');
+
 legend
 axis equal
