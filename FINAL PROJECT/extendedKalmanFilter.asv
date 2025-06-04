@@ -51,7 +51,7 @@ U = U0;
 
 
 u = rand(2,1); % define acceleration magnitude
-disturbanceMag =0.1; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
+disturbanceMag =1; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
 %Q = [(0+Accel_noise_mag^2)*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 
@@ -61,7 +61,7 @@ B = subs(FuSym,subsVecSym,subsVecNum);
 disturbanceCov =  disturbanceMag^2 * eye(3);
 
 
-Sensor_noise_mag = 0.1;  %measurement noise: (stdv of location, in meters)
+Sensor_noise_mag = 0.001;  %measurement noise: (stdv of location, in meters)
 sensorCov = Sensor_noise_mag^2 * eye(3);% Compute the covariance matrix from the standard deviation of the measurement noise
 Q_estimate = Q(1:3);  %x_estimate of initial location
 P = eye(3); % Initialize covariance matrix P to model covariance
@@ -149,8 +149,8 @@ H = eye(3);     % Measurement matrix (GPS+compass observes [x; y; theta])
 
 for j = 1:numTimesteps
     % Generate noise (unknown to the filter)
-    w =  disturbanceMag * randn(3, 1);  % Process noise [v1; v2; v3]
-    v =  Sensor_noise_mag * randn(3, 1); % Measurement noise [h1; h2; h3]
+    w = 0* disturbanceMag * randn(3, 1);  % Process noise [v1; v2; v3]
+    v = 0* Sensor_noise_mag * randn(3, 1); % Measurement noise [h1; h2; h3]
 
     % Apply control input with noise (disturbance)
     U = USetPoint + w(1:2);  % gammaAct = gammaDes + v1, VAct = VDes + v2
@@ -178,8 +178,9 @@ for j = 1:numTimesteps
     nu = z - H * Q_estimate;  % Innovation
     S = Hq * P * Hq' + Hw * sensorCov * Hw';  % Innovation covariance (noise included via Hw)
     K = P * Hq' / S;  % Kalman gain
+    %K = eye(3);
     Q_estimate = Q_estimate + K * nu;  % State update
-    P = (eye(3)-K*Hq)*P*(eye(3)-K*Hq)' + K*disturbanceCov *K;  % Covariance update
+    P = (eye(3)-K*H)*P*()' ;  % Covariance update
 
 
     nu
