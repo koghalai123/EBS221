@@ -51,7 +51,7 @@ U = U0;
 
 
 u = rand(2,1); % define acceleration magnitude
-disturbanceMag =0.01; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
+disturbanceMag =0.00001; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
 %Q = [(0+Accel_noise_mag^2)*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 
@@ -61,7 +61,7 @@ B = subs(FuSym,subsVecSym,subsVecNum);
 disturbanceCov = [(0+disturbanceMag^2)*(B*B')];
 
 
-Sensor_noise_mag = 0.01;  %measurement noise: (stdv of location, in meters)
+Sensor_noise_mag = 0.00001;  %measurement noise: (stdv of location, in meters)
 sensorCov = [Sensor_noise_mag^2*(H'*H)];% Compute the covariance matrix from the standard deviation of the measurement noise
 Q_estimate = Q(1:3);  %x_estimate of initial location
 P = disturbanceCov; % Initialize covariance matrix P to model covariance
@@ -74,7 +74,7 @@ Q_loc_estimate = []; %  Array stores object's Kalman filter position estimate
 %test
 
 
-numTimesteps = 40;
+numTimesteps = 10;
 numIntegrationSteps = numTimesteps*DT/dt;
 
 QAll = zeros(numIntegrationSteps,length(Q));
@@ -87,32 +87,45 @@ for j = 1:numTimesteps
     subsVecSym = [QSym;USym;tau_vSym;tau_gammaSym;DTSym;LSym;v1;v2;v3;h1;h2;h3];
     subsVecNum = [Q_estimate;U;tau_v;tau_gamma;DT;L;0;0;0;0;0;0];
 
-    
-    z = H'.*Q(1:3)+v;
-
-    Q_estimate =  double(subs(QNewSym,subsVecSym,subsVecNum));
-    %predict next error covariance
-    Fx = double(subs(FqSym,subsVecSym,subsVecNum));
+    Fq = double(subs(FqSym,subsVecSym,subsVecNum));
     Fu = double(subs(FuSym,subsVecSym,subsVecNum));
     Fv = double(subs(FvSym,subsVecSym,subsVecNum));
-
     Hw = double(subs(HwSym,subsVecSym,subsVecNum));
     Hq = double(subs(HqSym,subsVecSym,subsVecNum));
-    P = double(Fx*P*Fx' + Fv*disturbanceCov*Fv');
     
-    nu = double(z-Q_estimate);
-    K = double(P*Hq'*(Hq*P*Hq'+Hw*sensorCov*Hw')^-1);
-    %Q_estimate = double(Q_estimate+K*nu);
-    P = double(P-K*Hq*P);
-
-
-
-
-    
-    
-
     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
     Q = QNext(end,:)';
+
+    Q_estimate =  double(subs(QNewSym,subsVecSym,subsVecNum));
+    z = H'.*Q(1:3)+v;
+    %predict next error covariance
+    
+    P = double(Fq*P*Fq' + Fv*disturbanceCov*Fv');
+    
+    nu = double(z-H*Q_estimate);
+    K = double(P*Hq'/(Hq*P*Hq'+Hw*sensorCov*Hw'));
+    Q_estimate = double(Q_estimate+K*nu);
+    P = double(P-K*Hq*P);
+    
+
+
+   %  s.x = s.A*s.x + s.B*s.u;
+   % s.P = s.A * s.P * s.A' + s.Q;
+   % 
+   % % Compute Kalman gain factor:
+   % K = s.P*s.H'/(s.H*s.P*s.H'+s.R);
+   % % Correction based on observation:
+   % s.x = s.x + K*(s.z-s.H*s.x);
+   % s.P = s.P - K*s.H*s.P;
+    %det(K)
+    %K
+    %nu
+    K*nu
+
+    
+    
+
+    
     QAll((j-1)*DT/dt+1:(j-1)*DT/dt+DT/dt,:) = QNext;
     %Store for plotting
     Q_true = [Q_true; Q']; %append the new true position
@@ -126,10 +139,32 @@ lineLength = linspace(0,1);
 thetaLine = [QAll(end,1),QAll(end,2)]+[(lineLength*cos(QAll(end,3)))',(lineLength*sin(QAll(end,3)))'];
 hold on;
 %plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+LW = 1.5;
 
-plot(Q_true(:,1),Q_true(:,2),'DisplayName','True Locations');
-plot(Q_sensed(:,1),Q_sensed(:,2),'DisplayName','Sensed Locations');
-plot(Q_loc_estimate(:,1),Q_loc_estimate(:,2),'DisplayName','Kalman Filtered Locations');
+plot(Q_true(:,1),Q_true(:,2),'DisplayName','True Locations',LineStyle="-",LineWidth=LW);
+plot(Q_sensed(:,1),Q_sensed(:,2),'DisplayName','Sensed Locations',LineStyle="--",LineWidth=LW);
+plot(Q_loc_estimate(:,1),Q_loc_estimate(:,2),'DisplayName','Kalman Filtered Locations',LineStyle=":",LineWidth=LW);
+
+legend
+axis equal
+
+
+f2 = figure();
+a2 = axes(f2);
+hold on;
+%plot(thetaLine(:,1),thetaLine(:,2),'DisplayName','Direction of Travel');
+plot([1:length(Q_true)],Q_true(:,1),'DisplayName','True x',Color="r",LineStyle="-",LineWidth=LW);
+plot([1:length(Q_true)],Q_true(:,2),'DisplayName','True y',Color="r",LineStyle="--",LineWidth=LW);
+plot([1:length(Q_true)],Q_true(:,3),'DisplayName',"True \theta",Color="r",LineStyle=":",LineWidth=LW);
+
+plot([1:length(Q_true)],Q_sensed(:,1),'DisplayName','Sensed x',Color="b",LineStyle="-",LineWidth=LW);
+plot([1:length(Q_true)],Q_sensed(:,2),'DisplayName','Sensed y',Color="b",LineStyle="--",LineWidth=LW);
+plot([1:length(Q_true)],Q_sensed(:,3),'DisplayName',"Sensed \theta",Color="b",LineStyle=":",LineWidth=LW);
+
+plot([1:length(Q_true)],Q_loc_estimate(:,1),'DisplayName','Estimated x',Color="g",LineStyle="-",LineWidth=LW);
+plot([1:length(Q_true)],Q_loc_estimate(:,2),'DisplayName','Estimated y',Color="g",LineStyle="--",LineWidth=LW);
+plot([1:length(Q_true)],Q_loc_estimate(:,3),'DisplayName',"Estimated \theta",Color="g",LineStyle=":",LineWidth=LW);
+
 
 legend
 axis equal
