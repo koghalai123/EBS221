@@ -22,9 +22,10 @@ FqSym = jacobian(QNewSym,QSym);
 FuSym = jacobian(QNewSym,[USym]);
 FvSym = jacobian(QNewSym,[disturbanceSym]);
 
-HqSym = jacobian(QNewSym,[QSym]);
-HwSym = jacobian(QNewSym,[noiseSym]);
-
+% HqSym = jacobian(QNewSym,[QSym]);
+% HwSym = jacobian(QNewSym,[noiseSym]);
+Hw = diag(3);
+Hq = diag(3);
 
 H = eye(3); % measurement matrix
 
@@ -51,7 +52,7 @@ U = U0;
 
 
 u = rand(2,1); % define acceleration magnitude
-disturbanceMag =0.1; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
+disturbanceMag =0.5; % process noise σw; the variability in how fast the object is speeding up (stdv of acceleration: meters/sec^2)
 %Q = [(0+Accel_noise_mag^2)*(B*B')]; % Compute the covariance matrix from the standard deviation of the process noise
 
 
@@ -61,7 +62,7 @@ B = subs(FuSym,subsVecSym,subsVecNum);
 disturbanceCov =  disturbanceMag^2 * eye(3);
 
 
-Sensor_noise_mag = 0.1;  %measurement noise: (stdv of location, in meters)
+Sensor_noise_mag = 0.05;  %measurement noise: (stdv of location, in meters)
 sensorCov = Sensor_noise_mag^2 * eye(3);% Compute the covariance matrix from the standard deviation of the measurement noise
 Q_estimate = Q(1:3);  %x_estimate of initial location
 P = eye(3); % Initialize covariance matrix P to model covariance
@@ -74,7 +75,7 @@ Q_loc_estimate = []; %  Array stores object's Kalman filter position estimate
 %test
 
 
-% numTimesteps = 10;
+% numTimesteps = 50;
 % numIntegrationSteps = numTimesteps*DT/dt;
 % 
 % QAll = zeros(numIntegrationSteps,length(Q));
@@ -88,47 +89,23 @@ Q_loc_estimate = []; %  Array stores object's Kalman filter position estimate
 %     subsVecNum = [Q_estimate;U;tau_v;tau_gamma;DT;L;0;0;0;0;0;0];
 % 
 %     Fq = double(subs(FqSym,subsVecSym,subsVecNum));
-%     Fu = double(subs(FuSym,subsVecSym,subsVecNum));
 %     Fv = double(subs(FvSym,subsVecSym,subsVecNum));
-%     Hw = double(subs(HwSym,subsVecSym,subsVecNum));
-%     Hq = double(subs(HqSym,subsVecSym,subsVecNum));
 % 
-%     %Fv = diag(3);
-%     Hw = diag(3);
-%     Hq = diag(3);
+% 
 % 
 %     [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
 %     Q = QNext(end,:)';
 % 
-%     Q_estimate =  double(subs(QNewSym,subsVecSym,subsVecNum));
-%     z = H*Q(1:3)+v;
-%     %predict next error covariance
-%     %
-%     Fv = diag(3);
-%     P = double(Fq*P*Fq' + Fv*disturbanceCov*Fv');
+%     Q_estimate = double(subs(QNewSym, subsVecSym, subsVecNum));  % State prediction (noise-free)
+%     P = Fq * P * Fq' + Fv * disturbanceCov * Fv';  % Covariance prediction (noise included via Fv)
 % 
-%     nu = double(z-H*Q_estimate);
-%     K = double(P*Hq'/(Hq*P*Hq'+Hw*sensorCov*Hw'));
-%     Q_estimate = double(Q_estimate+K*nu);
-%     P = double(P-K*Hq*P);
-% 
-% 
-% 
-%    %  s.x = s.A*s.x + s.B*s.u;
-%    % s.P = s.A * s.P * s.A' + s.Q;
-%    % 
-%    % % Compute Kalman gain factor:
-%    % K = s.P*s.H'/(s.H*s.P*s.H'+s.R);
-%    % % Correction based on observation:
-%    % s.x = s.x + K*(s.z-s.H*s.x);
-%    % s.P = s.P - K*s.H*s.P;
-%     %det(K)
-%     %K
-%     %nu
-%     %K*nu
-% 
-% 
-% 
+%     % --- EKF Update Step ---
+%     z = H * Q(1:3) + v;  % Simulate noisy sensor measurement
+%     nu = z - H * Q_estimate;  % Innovation
+%     S = Hq * P * Hq' + Hw * sensorCov * Hw';  % Innovation covariance (noise included via Hw)
+%     K = P * Hq' / S;  % Kalman gain
+%     Q_estimate = Q_estimate + K * nu;  % State update
+%     P = (eye(3)-K*Hq)*P*(eye(3)-K*Hq)' + K*disturbanceCov *K;  % Covariance update
 % 
 % 
 %     QAll((j-1)*DT/dt+1:(j-1)*DT/dt+DT/dt,:) = QNext;
@@ -140,7 +117,7 @@ Q_loc_estimate = []; %  Array stores object's Kalman filter position estimate
 
 
 
-numTimesteps = 10;
+numTimesteps = 50;
 numIntegrationSteps = numTimesteps * DT / dt;
 
 QAll = zeros(numIntegrationSteps, length(Q));
@@ -182,7 +159,7 @@ for j = 1:numTimesteps
     P = (eye(3)-K*Hq)*P*(eye(3)-K*Hq)' + K*disturbanceCov *K;  % Covariance update
 
 
-    nu
+    %nu
     % Store results
     QAll((j-1)*DT/dt+1 : j*DT/dt, :) = QNext;
     Q_true = [Q_true; Q'];          % Ground truth
