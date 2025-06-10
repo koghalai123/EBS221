@@ -60,12 +60,9 @@
 % 
 % % sim variables
 % 
-dt = 0.01;
-DT = 0.1;
-timeToRun = 50;
-numTimesteps = timeToRun/DT;
-integrationStepsPerTimeStep = DT/dt;
-numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
+% DT = 0.01;
+% timeToRun = 500;
+% numTimesteps = timeToRun/DT;
 % 
 % 
 % 
@@ -76,7 +73,7 @@ numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
 % [desiredPath] = OptPathGen(Q0,Qend);
 % x_path = desiredPath(1,:);
 % y_path = desiredPath(2,:);
-% 
+
 %% Prepare for EKF
 [odoCov,GPSCov] = estimateCovariance();
 
@@ -125,66 +122,76 @@ Q_estimate = Q0;
 QTrueMat = zeros(numTimesteps, length(Q));
 QMeasMat = zeros(numTimesteps, 3);
 QEstMat = zeros(numTimesteps, 3);
+QEstMatFiltered = zeros(numTimesteps, 3);
 
-
+subsVecSym = [QSym; USym; tau_vSym; tau_gammaSym; DTSym; LSym; v1; v2; v3; h1; h2; h3];
+subsVecNum = [Q_estimate(1:3); U; tau_v; tau_gamma; DT; L; 0; 0; 0; 0; 0; 0];
+Hw = eye(3);
+Fq = double(subs(FqSym, subsVecSym, subsVecNum));
+Fv = double(subs(FvSym, subsVecSym, subsVecNum));
+Hq = double(subs(HqSym, subsVecSym, subsVecNum));
 for j = 1:numTimesteps
     tic
     [slicedPath,pointOnPath] = pathSlicer(pointOnPath,path,Ld,Q);
     [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,slicedPath);
     crossTrackErrorMat(j,1)=crossTrackError;
     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
-    if j>numTimesteps/10 && endDistance<0.35
-        QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
-        crossTrackErrorMat=crossTrackErrorMat(1:j,:);
-        break
-    end
+    
     U = [gammaD;vD];%[gammaD;1];
     
     %[QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
     %Q
     [QTrue, odometryInfo] = robot_odo(Q, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
-    [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( Q(1), Q(2), Q(3) );
-    Q = QTrue; 
-
-    subsVecSym = [QSym; USym; tau_vSym; tau_gammaSym; DTSym; LSym; v1; v2; v3; h1; h2; h3];
-    subsVecNum = [Q_estimate(1:3); U; tau_v; tau_gamma; DT; L; 0; 0; 0; 0; 0; 0];
-
-    z = [ xGPS, yGPS, theta_GPS ]';
-    Fq = double(subs(FqSym, subsVecSym, subsVecNum));
-    Fv = double(subs(FvSym, subsVecSym, subsVecNum));
-    Hq = double(subs(HqSym, subsVecSym, subsVecNum));
-    Hw = double(subs(HwSym, subsVecSym, subsVecNum));
-
-    dQOdo = [cos(Q_estimate(3))*odometryInfo(1);sin(Q_estimate(3))*odometryInfo(1);odometryInfo(2)];
-    QOdo = Q_estimate(1:3)+dQOdo;
-     [Q_estimate,z,P] = EKFStep(QOdo,Fq,Fv,Hw,Hq,QNewSym,subsVecSym,subsVecNum,z,P,H,disturbanceCov,sensorCov) ;
-    % laser scan and update scan map
     
-    if rem(j,1) ==0  % only scans some of the time
-        % this speeds up the code at the expense of resolution
-        Tl = SE2([Q(1),Ymax-Q(2),-Q(3)]);     % lateral motion along the x-axis
+    Q = QTrue; 
+    dQOdo = [cos(Q_estimate(3))*odometryInfo(1);sin(Q_estimate(3))*odometryInfo(1);odometryInfo(2)];
+    Q_estimate = Q_estimate(1:3)+dQOdo;
+
+    %Do this only every second when a new GPS measurement is acquired
+    if mod(j,1/DT)==0
+        [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( Q(1), Q(2), Q(3) );
+        z = [ xGPS, yGPS, theta_GPS ]';
+    
+        Fq = [[1, 0, -DT*U(2)*sin(Q_estimate(3))];
+            [0, 1,  DT*U(2)*cos(Q_estimate(3))];
+            [0, 0,                            1]];
+        Fv = [[cos(Q_estimate(3)), 0];
+            [sin(Q_estimate(3)), 0];
+            [            0, 1]];
+        Hq = [[1, 0, -DT*U(2)*sin(Q_estimate(3))];
+            [0, 1,  DT*U(2)*cos(Q_estimate(3))];
+            [0, 0,                            1]];
+        Hw = eye(3);
+
         
-        p = laserScannerNoisy(angleSpan, angleStep, rangeMax, Tl.T, bitmap, Xmax, Ymax);
-        
-        filteredRange = medfilt1(p(:,2),5,'omitnan','truncate');
-        
-        for i=1:length(p)
-            angle = p(i,1);
-            % range = p(i,2);
-            range = filteredRange(i,1);
-            % possible infinite range is handled inside the update function
-            n = updateLaserBeamGrid(angle, range, Tl.T, R, C, Xmax, Ymax);
-        end
-        
+         [Q_estimate,z,P] = EKFStep(Q_estimate,Fq,Fv,Hw,Hq,QNewSym,subsVecSym,subsVecNum,z,P,H,disturbanceCov,sensorCov) ;
+        QEstMatFiltered(floor(j/(1/DT)),:) = Q_estimate';
     end
+
+        % laser scan and update scan map
+    
+    % if rem(j,1) ==0  % only scans some of the time
+    %     % this speeds up the code at the expense of resolution
+    %     Tl = SE2([Q(1),Ymax-Q(2),-Q(3)]);     % lateral motion along the x-axis
+    % 
+    %     p = laserScannerNoisy(angleSpan, angleStep, rangeMax, Tl.T, bitmap, Xmax, Ymax);
+    % 
+    %     filteredRange = medfilt1(p(:,2),5,'omitnan','truncate');
+    % 
+    %     for i=1:length(p)
+    %         angle = p(i,1);
+    %         % range = p(i,2);
+    %         range = filteredRange(i,1);
+    %         % possible infinite range is handled inside the update function
+    %         n = updateLaserBeamGrid(angle, range, Tl.T, R, C, Xmax, Ymax);
+    %     end
+    % 
+    % end
     
     %QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
     % ends loop if runs for too long
     E = cputime-t;
     
-    if E > 60*10
-        break
-    end
     
     % clf(a1)
     % hold(a1,'on');
@@ -196,7 +203,12 @@ for j = 1:numTimesteps
     QMeasMat(j,:) = z';
     QEstMat(j,:) = Q_estimate';
 
-    disp(toc)
+    if j>numTimesteps/10 && endDistance<0.35
+        crossTrackErrorMat=crossTrackErrorMat(1:j,:);
+        break
+    end
+
+    disp(toc);
 end
 E = cputime-t
 
@@ -228,6 +240,9 @@ f3 = figure(3);
 a3 = axes(f3);
 hold on;
 axis equal
-plot(QTrueMat(:,1),QTrueMat(:,2),DisplayName="True Locations")
-plot(QMeasMat(:,1),QMeasMat(:,2),DisplayName="Measured Locations")
-plot(QEstMat(:,1),QEstMat(:,2),DisplayName="True Locations")
+plot(QTrueMat(:,1),QTrueMat(:,2),DisplayName="True Locations",Color='r')
+plot(QMeasMat(:,1),QMeasMat(:,2),DisplayName="Measured Locations",Color='g')
+plot(QEstMat(:,1),QEstMat(:,2),DisplayName="Estimated Locations",Color='b')
+plot(QEstMatFiltered(:,1),QEstMatFiltered(:,2),DisplayName="Filtered Estimated Locations",Color='')
+
+legend

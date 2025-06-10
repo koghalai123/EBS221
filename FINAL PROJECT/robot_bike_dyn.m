@@ -1,4 +1,4 @@
-function [QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v)
+function [QTrue, QOdo] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v)
 global dt DT
 
 U = max(U,Umin);
@@ -16,8 +16,9 @@ gammaD = U(1);
 VD = U(2);
 
 steps = (DT/dt-1);
-QNext = zeros(steps+1,length(Q));
-QNext(1,:) = Q;
+QNext = zeros(steps+1,length(Q)*2);
+QTrue = Q;
+QNext(1,:) = [Q',QTrue'];
 
 if tau_gamma == 0
 tau_gamma= dt;
@@ -28,6 +29,7 @@ end
 
 
 for i = 1:steps
+    [QTrue, QOdo] = robot_odo(Q, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
     x = Q(1);
     y = Q(2);
     theta = Q(3);
@@ -43,7 +45,12 @@ for i = 1:steps
     QNew = Q+QDot*dt;
     Q = QNew;
 
-    QNext(i+1,:) = QNew;
+    
+    QNext(i+1,:) = [QNew',QTrue'];
+    %QNext(i+1,:) = [QNew'];
+
+    
+
 end
 
 

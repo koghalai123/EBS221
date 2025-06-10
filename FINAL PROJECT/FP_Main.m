@@ -54,18 +54,15 @@ Ld = 0.2*Rmin;
 
 % laser variables
 angleSpan = deg2rad(180);
-angleStep = deg2rad(2);%angleSpan/720;%
+angleStep = deg2rad(0.125);%angleSpan/720;%
 rangeMax = 20;%20;
 bitmaplaser = 0.5* ones(R, C); %initialize as unknown-occupancy pixels
 
 % sim variables
 
-dt = 0.01;
-DT = 0.1;
+DT = 0.01;
 timeToRun = 500;
 numTimesteps = timeToRun/DT;
-integrationStepsPerTimeStep = DT/dt;
-numIntegrationSteps = round(numTimesteps*integrationStepsPerTimeStep);
 
 
 
@@ -120,11 +117,13 @@ a1 = axes(f1);
 pointOnPath = 1;
 path = [x_path;y_path];
 Q_estimate = Q0;
+z = Q0(1:3);
 
 
 QTrueMat = zeros(numTimesteps, length(Q));
 QMeasMat = zeros(numTimesteps, 3);
 QEstMat = zeros(numTimesteps, 3);
+QEstMatFiltered = zeros(numTimesteps, 3);
 
 subsVecSym = [QSym; USym; tau_vSym; tau_gammaSym; DTSym; LSym; v1; v2; v3; h1; h2; h3];
 subsVecNum = [Q_estimate(1:3); U; tau_v; tau_gamma; DT; L; 0; 0; 0; 0; 0; 0];
@@ -138,61 +137,58 @@ for j = 1:numTimesteps
     [gammaD,endDistance,crossTrackError,crossTrackErrorInterpolated] = purePursuit(Q,L,Ld,slicedPath);
     crossTrackErrorMat(j,1)=crossTrackError;
     crossTrackErrorMat(j,2)=crossTrackErrorInterpolated;
-    if j>numTimesteps/10 && endDistance<0.35
-        QAll = QAll(1:(j-1)*integrationStepsPerTimeStep,:);
-        crossTrackErrorMat=crossTrackErrorMat(1:j,:);
-        break
-    end
+    
     U = [gammaD;vD];%[gammaD;1];
     
     %[QNext] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
     %Q
     [QTrue, odometryInfo] = robot_odo(Q, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
-    [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( Q(1), Q(2), Q(3) );
+    
     Q = QTrue; 
-
-    
-
-    z = [ xGPS, yGPS, theta_GPS ]';
-
-
-    Fq = [[1, 0, -DT*U(2)*sin(Q_estimate(3))];
-        [0, 1,  DT*U(2)*cos(Q_estimate(3))];
-        [0, 0,                            1]];
-    
-    Fv = [[cos(Q_estimate(3)), 0];
-        [sin(Q_estimate(3)), 0];
-        [            0, 1]];
-    
-    Hq = [[1, 0, -DT*U(2)*sin(Q_estimate(3))];
-        [0, 1,  DT*U(2)*cos(Q_estimate(3))];
-        [0, 0,                            1]];
-
-    Hw = eye(3);
-
-
     dQOdo = [cos(Q_estimate(3))*odometryInfo(1);sin(Q_estimate(3))*odometryInfo(1);odometryInfo(2)];
-    QOdo = Q_estimate(1:3)+dQOdo;
-     [Q_estimate,z,P] = EKFStep(QOdo,Fq,Fv,Hw,Hq,QNewSym,subsVecSym,subsVecNum,z,P,H,disturbanceCov,sensorCov) ;
-    % laser scan and update scan map
+    Q_estimate = Q_estimate(1:3)+dQOdo;
+
+    %Do this only every second when a new GPS measurement is acquired
+    if mod(j,1/DT)==0
+        [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( Q(1), Q(2), Q(3) );
+        z = [ xGPS, yGPS, theta_GPS ]';
     
-    % if rem(j,1) ==0  % only scans some of the time
-    %     % this speeds up the code at the expense of resolution
-    %     Tl = SE2([Q(1),Ymax-Q(2),-Q(3)]);     % lateral motion along the x-axis
-    % 
-    %     p = laserScannerNoisy(angleSpan, angleStep, rangeMax, Tl.T, bitmap, Xmax, Ymax);
-    % 
-    %     filteredRange = medfilt1(p(:,2),5,'omitnan','truncate');
-    % 
-    %     for i=1:length(p)
-    %         angle = p(i,1);
-    %         % range = p(i,2);
-    %         range = filteredRange(i,1);
-    %         % possible infinite range is handled inside the update function
-    %         n = updateLaserBeamGrid(angle, range, Tl.T, R, C, Xmax, Ymax);
-    %     end
-    % 
-    % end
+        Fq = [[1, 0, -DT*U(2)*sin(Q_estimate(3))];
+            [0, 1,  DT*U(2)*cos(Q_estimate(3))];
+            [0, 0,                            1]];
+        Fv = [[cos(Q_estimate(3)), 0];
+            [sin(Q_estimate(3)), 0];
+            [            0, 1]];
+        Hq = [[1, 0, -DT*U(2)*sin(Q_estimate(3))];
+            [0, 1,  DT*U(2)*cos(Q_estimate(3))];
+            [0, 0,                            1]];
+        Hw = eye(3);
+
+        
+         [Q_estimate,z,P] = EKFStep(Q_estimate,Fq,Fv,Hw,Hq,QNewSym,subsVecSym,subsVecNum,z,P,H,disturbanceCov,sensorCov) ;
+        QEstMatFiltered(floor(j/(1/DT)),:) = Q_estimate';
+
+
+
+        % laser scan and update scan map
+        Tl = SE2([Q(1),Ymax-Q(2),-Q(3)]);     % lateral motion along the x-axis
+
+        p = laserScannerNoisy(angleSpan, angleStep, rangeMax, Tl.T, bitmap, Xmax, Ymax);
+
+        filteredRange = medfilt1(p(:,2),5,'omitnan','truncate');
+
+        for i=1:length(p)
+            angle = p(i,1);
+            % range = p(i,2);
+            range = filteredRange(i,1);
+            % possible infinite range is handled inside the update function
+            n = updateLaserBeamGrid(angle, range, Tl.T, R, C, Xmax, Ymax);
+        end
+    
+
+
+    end
+
     
     %QAll((j-1)*integrationStepsPerTimeStep+1:(j-1)*integrationStepsPerTimeStep+integrationStepsPerTimeStep,:) = QNext;
     % ends loop if runs for too long
@@ -208,6 +204,17 @@ for j = 1:numTimesteps
     QTrueMat(j,:) = QTrue';
     QMeasMat(j,:) = z';
     QEstMat(j,:) = Q_estimate';
+
+    if j>numTimesteps/10 && endDistance<0.35
+        QTrueMat = QTrueMat(1:j,:);
+        QMeasMat = QMeasMat(1:j,:);
+        QEstMat = QEstMat(1:j,:);
+        QEstMatFiltered = QEstMatFiltered(1:floor(j/(1/DT)),:);
+
+        crossTrackErrorMat=crossTrackErrorMat(1:j,:);
+        break
+    end
+
     disp(toc);
 end
 E = cputime-t
@@ -216,7 +223,8 @@ E = cputime-t
 figure(1);
 clf
 hold on
-imagesc([0 Xmax], [0 Ymax],bitmaplaser./(1+bitmaplaser)); title('Binary occupancy grid')
+imagesc([0 Xmax], [0 Ymax],bitmaplaser./(1+bitmaplaser)); 
+title('Binary occupancy grid')
 colorbar
 scatter(x,y,'xr')
 plot(x_path,y_path)
@@ -243,4 +251,6 @@ axis equal
 plot(QTrueMat(:,1),QTrueMat(:,2),DisplayName="True Locations",Color='r')
 plot(QMeasMat(:,1),QMeasMat(:,2),DisplayName="Measured Locations",Color='g')
 plot(QEstMat(:,1),QEstMat(:,2),DisplayName="Estimated Locations",Color='b')
+plot(QEstMatFiltered(:,1),QEstMatFiltered(:,2),DisplayName="Filtered Estimated Locations",Color='m')
+
 legend
