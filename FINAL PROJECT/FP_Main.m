@@ -220,6 +220,35 @@ end
 E = cputime-t
 
 
+%% find trees and estimate radius
+fileID = fopen('results.txt','w');
+fileIDTrue = fopen('true.txt','w');
+
+% MeasureRadius = zeros(M, K);
+% MeasureX(j,i) = zeros(M, K);
+% MeasureY(j,i) = zeros(M, K);
+r_check = 0.75;
+for i=1:K
+    fprintf(fileID,'%1d\n',i);
+    fprintf(fileIDTrue,'%1d\n',i);
+    m = 1;
+    for j=1:M
+        j;
+        [XC, YC, RadiusC] = findTree(x(j,i),y(j,i),r_check,Xmax, Ymax, R, C);
+        MeasureX(j,i) = XC;
+        MeasureY(j,i) = YC;
+        MeasureRadius(j,i) = RadiusC;
+        if RadiusC>=0.1
+            fprintf(fileID,'%1d, %6.4f, %6.4f, %6.5f\n',m,XC,YC,RadiusC);
+            fprintf(fileIDTrue,'%1d, %6.4f, %6.4f, %6.5f\n',m,x(j,i),y(j,i),RadiusC);
+            m=m+1;
+        end      
+    end
+    fprintf(fileID,'\n');
+    fprintf(fileIDTrue,'\n');
+end
+
+
 figure(1);
 clf
 hold on
