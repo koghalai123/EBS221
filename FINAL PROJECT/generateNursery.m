@@ -1,12 +1,14 @@
-clear all;
+function [bitmap_true] = generateNursery()
+
+%clear all;
 rng('shuffle'); %init random generator
-global bitmap;
+global bitmap_true;
 
 addpath('additionalFiles');
 
 
 R = 5000; C = 5000; %numbers of rows and columns of bitmap
-bitmap = zeros(R, C); %initialize as empty
+bitmap_true = zeros(R, C); %initialize as empty
 
 K = 5; % number of tree rows running south-north direction
 M = 7; %maximum number of trees in each row
@@ -37,13 +39,13 @@ for j=1:K
         radius = (minTreeRadius + rand*(maxTreeRadius-minTreeRadius))/ (Xmax/C); %(m)
         [I, J] = XYtoIJ(x(i,j), y(i,j), Xmax, Ymax, R, C);
         if rand > 0.02 
-            draw_disc(I, J, radius, R, C); %plot tree trunk
+            [bitmap_true] = draw_disc(I, J, radius, R, C, bitmap_true); %plot tree trunk
         end
     end
 end
 
 figure(1); 
-imagesc(x_im, y_im, bitmap); %imagesc flips the bitmap rows, so correct this
+imagesc(x_im, y_im, bitmap_true); %imagesc flips the bitmap rows, so correct this
 %imagesc(x_im, y_im, flipud(bitmap)); %imagesc flips the bitmap rows, so correct this
 set(gca,'YDir','normal');
 axis equal

@@ -24,6 +24,7 @@ n = 10000;
 measurementInterval = 100;
 observations = zeros(n,m);
 covStorage = zeros(round(n/measurementInterval),m,m);
+measurementStorage = zeros(n,2*m);
 QTrue = [0,0,0,0,0]'+rand(5,1);
 for i = 1:n
     % gammaD VD
@@ -31,7 +32,12 @@ for i = 1:n
     % x y theta gamma v
     Q = QTrue;
     [QTrue, QOdo] = robot_odo(Q, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
-    observations(i,:) = QTrue(1:m)-QOdo;
+    travelDistance = (sum((Q(1:2)-QTrue(1:2)).^2))^0.5;
+    angleChange = QTrue(3)-Q(3);
+    QTravel = [travelDistance;angleChange];
+    measurementStorage(i,:) = [QTravel' , QOdo'];
+     
+    observations(i,:) = QTravel - QOdo; %QTrue(1:m)-
     if mod(i,measurementInterval)==0
         covStorage(i/measurementInterval,:,:) = cov(observations(1:i,:));
     end
