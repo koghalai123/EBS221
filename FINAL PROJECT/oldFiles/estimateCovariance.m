@@ -57,20 +57,20 @@ for i = 1:n
     
 end
 
-% covElements = reshape(covStorage,round(n/measurementInterval),m^2);
-% f1 = figure();
-% a1 = axes(f1);
-% hold on;
-% for i = 1:size(covElements,2)
-% plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
-% yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
-% 
-% end
-% title("Covariance for Odometry");
-% xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
-% ylabel("Covariance");
-% legend
-% %cov(observations)
+covElements = reshape(covStorage,round(n/measurementInterval),m^2);
+f1 = figure();
+a1 = axes(f1);
+hold on;
+for i = 1:size(covElements,2)
+plot(covElements(:,i),DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
+yline(covElements(end,i),DisplayName=strcat("Final Covariance Value for Entry: ", num2str(i)))
+
+end
+title("Covariance for Odometry");
+xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
+ylabel("Covariance");
+legend
+%cov(observations)
 odoCov = reshape(covStorage(end,:,:),[m,m,1]);
 
 

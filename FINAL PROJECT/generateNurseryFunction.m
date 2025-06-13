@@ -11,7 +11,8 @@ rng('shuffle'); %init random generator
 % M = 7; %maximum number of trees in each row
 % W = 3; % distance between tree rows (m)
 % D = 2; %distance between trees in the same row (m)
-Xmax = W*(K-1)+30; Ymax = Xmax;
+mapWidth = max(W*(K-1)+30,D*(M-1)+30);
+Xmax = mapWidth; Ymax = Xmax;
 gridResolution = Xmax/R;
 x_im=[0 Xmax]; y_im=[0 Ymax]; % to display image with proper axes
 

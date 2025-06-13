@@ -24,7 +24,7 @@ addpath 'additionalFiles/geom2d/geom2d'
 % gen nursery variables
 X_first_tree = 20;
 Y_first_tree = 20;
-R = 5000; C = 5000; %numbers of rows and columns of bitmap
+R = 1500; C = 1500; %numbers of rows and columns of bitmap
 K = 6; % number of tree rows running south-north direction
 M = 8; %maximum number of trees in each row
 W = 3; % distance between tree rows (m)

@@ -15,7 +15,7 @@ x1=P1(1);     y1=P1(2);
 wasObject = 1;
 if (isinf(range)) % handle Inf return values
     %range = Xmax^2+Ymax^2;  % assign arbitrary huge value
-    range = rangeMax;
+    range = rangeMax-1;
     wasObject = 0;
 end
 
@@ -54,15 +54,17 @@ end
 
 % %update detected obstacle pixel
 % bitmaplaser(I2, J2) = 1;
-PHigh = 0.9;
-PLow = 0.1;
-%update detected obstacle pixel
-bitmaplaser(I2, J2) = min(bitmaplaser(I2, J2)*(wasObject)*PHigh/PLow,1000);
+PHigh = 0.8;
+PLow = 0.2;
+%update detected obstacle pixel 
+% Raise the probabilities artificially in order to deal with some of the
+% movement noise
+bitmaplaser(I2, J2) = min(bitmaplaser(I2, J2)*(wasObject)*5*PHigh/PLow,5000);
 % use bresenham to find all pixels that are between laser and obstacle
 l=bresenhamFast(I1,J1,I2,J2);
 %[l1 l2]=size(l);
 for k=1:length(l)-1 %skip the target pixel
-    bitmaplaser(l(k,1),l(k,2)) = max(min(bitmaplaser(l(k,1),l(k,2))*PLow/PHigh,1000),1/100);
+    bitmaplaser(l(k,1),l(k,2)) = max(min(bitmaplaser(l(k,1),l(k,2))*PLow/PHigh,5000),1/100);
     % bitmaplaser(l(k,1),l(k,2)) = 0; % free pixels
 end
 
