@@ -5,18 +5,15 @@
 % Now, the robot's perception of the enviroment is the bitmap (boolean occupancy grid with obstacles) with origin at (0,0) and uper NE corner (Xmax, Ymax),
 % This function uses the laser scanner output to populate the obstacle pixels in the bitmap 
 % and the free space (free pixels) in the bitmap.
-function [p] = updateLaserBeamGrid(angle, range, Tl, R, C, Xmax, Ymax,rangeMax)
+function [p] = updateLaserBeamGrid(angle, range, Tl, R, C, Xmax, Ymax)
 global bitmaplaser; % this is the robot's perceived environment, not the actual environment
 
 %transform laser origin to world frame
 P1 = Tl*[0 0 1]';
 x1=P1(1);     y1=P1(2);
 
-wasObject = 1;
 if (isinf(range)) % handle Inf return values
-    %range = Xmax^2+Ymax^2;  % assign arbitrary huge value
-    range = rangeMax;
-    wasObject = 0;
+    range = Xmax^2+Ymax^2;  % assign arbitrary huge value
 end
 
 %first produce target point for laser in scanner frame
@@ -38,6 +35,7 @@ end
 if (abs(x2-x1)) < 1E-3
     dx = 1E-6;
 end
+
 edge = clipLine([x1,y1,dx,dy],[0 Xmax 0 Ymax]);
 %laser origin is always inside map
 %decide if clipping is necessary
@@ -54,18 +52,27 @@ end
 
 % %update detected obstacle pixel
 % bitmaplaser(I2, J2) = 1;
-PHigh = 0.9;
-PLow = 0.1;
+PHigh = 0.8;
+PLow = 0.2;
 %update detected obstacle pixel
-bitmaplaser(I2, J2) = min(bitmaplaser(I2, J2)*(wasObject)*PHigh/PLow,1000);
+bitmaplaser(I2, J2) = bitmaplaser(I2, J2)*PHigh/PLow;
 % use bresenham to find all pixels that are between laser and obstacle
+
 l=bresenhamFast(I1,J1,I2,J2);
+
 %[l1 l2]=size(l);
+
 for k=1:length(l)-1 %skip the target pixel
-    bitmaplaser(l(k,1),l(k,2)) = max(min(bitmaplaser(l(k,1),l(k,2))*PLow/PHigh,1000),1/100);
+    bitmaplaser(l(k,1),l(k,2)) = max(min(bitmaplaser(l(k,1),l(k,2))*PLow/PHigh,1000),1/1000);
     % bitmaplaser(l(k,1),l(k,2)) = 0; % free pixels
 end
 
+% tic
+% 
+% linear_indices = sub2ind(size(bitmaplaser), l(:,1), l(:,2));
+% bitmaplaser(linear_indices) = bitmaplaser(linear_indices).*PLow/PHigh; % Gives [10; 5; 30]
+% 
+% toc
 p = length(l) + 1;  % number of updated pixels
 
 end

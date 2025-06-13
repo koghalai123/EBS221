@@ -1,12 +1,9 @@
 function [XC, YC, RadiusC] = findTree(X_aprox,Y_aprox,r_check,Xmax, Ymax, R, C)
 global bitmaplaser 
-testmap = bitmaplaser./(1+bitmaplaser); % puts in proper scale
 
-if X_aprox<=0 && Y_aprox<=0
-    XC = X_aprox;
-    YC = Y_aprox;
-    RadiusC =0;
-else
+
+
+testmap = bitmaplaser./(1+bitmaplaser); % puts in proper scale
 
 % bounds to check for tree
 % lower left and upper right Ymax - 
@@ -22,7 +19,7 @@ onetreemap(i1:i2,j1:j2) = testmap(i1:i2,j1:j2);
 % bitmap(i1:i2,j1:j2)=1;
 
 % finds all points that are not empty
-[row,col]=find(onetreemap>=0.6);
+[row,col]=find(onetreemap>=0.1);
 pts = [row,col];
 
 % check if there is no tree
@@ -30,7 +27,7 @@ pts = [row,col];
 if length(row)<2
     XC = X_aprox;
     YC = Y_aprox;
-    RadiusC = -1;
+    RadiusC = 0;
 else
 
 % finds points that are likely noise as they are not near other points

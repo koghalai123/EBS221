@@ -28,10 +28,8 @@ crossTrackError=Dmin;
 numInterpolatedPoints = 200;
 interpolationIndices = linspace(0,200,numInterpolatedPoints);
 if minPointIndex==1
-
     nearestPathX =xPath([minPointIndex,minPointIndex,minPointIndex+1]);
     nearestPathY = yPath([minPointIndex,minPointIndex,minPointIndex+1]);
-
 elseif minPointIndex==length(xPath)
     nearestPathX =xPath([minPointIndex-1,minPointIndex,minPointIndex]);
     nearestPathY = yPath([minPointIndex-1,minPointIndex,minPointIndex]);

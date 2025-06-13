@@ -17,24 +17,44 @@ tau_v = 0.01;
 
 Umin = [Qmin(4),Qmin(5)]';
 Umax = -Umin;
-U0 = [0;0];
+U0 = [0.5;0];
 
 m = 2;
 n = 10000;
 measurementInterval = 100;
 observations = zeros(n,m);
 covStorage = zeros(round(n/measurementInterval),m,m);
+measurementStorage = zeros(n,2*m);
 QTrue = [0,0,0,0,0]'+rand(5,1);
+QPrev = QTrue;
 for i = 1:n
     % gammaD VD
-    U = U0+[gamma_max*rand(1,1);1];
+    U = U0+[0.5;1].*rand(2,1);
     % x y theta gamma v
-    Q = QTrue;
-    [QTrue, QOdo] = robot_odo(Q, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
-    observations(i,:) = QTrue(1:m)-QOdo;
+    Q_estimate = QTrue;
+    QPrev = QTrue;
+    %[QTrue, QOdo] = robot_bike_dyn(Q,U,Umin,Umax,Qmin,Qmax,L,tau_gamma,tau_v);
+    
+    
+    for j = 1:1/0.01
+        [QTrue, odometryInfo] = robot_odo(QTrue, U, Umin, Umax,Qmin, Qmax, L, tau_gamma, tau_v);
+        dQOdo = [cos(Q_estimate(3))*odometryInfo(1);sin(Q_estimate(3))*odometryInfo(1);odometryInfo(2)];
+        Q_estimate = Q_estimate(1:3)+dQOdo;
+    end
+
+    actualTravelDistance = (sum((QPrev(1:2)-QTrue(1:2)).^2))^0.5;
+    estimatedTravelDistance = (sum((QPrev(1:2)-Q_estimate(1:2)).^2))^0.5;
+    actualAngleChange = QTrue(3)-QPrev(3);
+    estimatedAngleChange = Q_estimate(3)-QPrev(3);
+    QTravel = [actualTravelDistance;actualAngleChange];
+    QOdo = [estimatedTravelDistance;estimatedAngleChange];
+    measurementStorage(i,:) = [QTravel' , QOdo'];
+     
+    observations(i,:) = QTravel - QOdo; %QTrue(1:m)-
     if mod(i,measurementInterval)==0
         covStorage(i/measurementInterval,:,:) = cov(observations(1:i,:));
     end
+    
 end
 
 % covElements = reshape(covStorage,round(n/measurementInterval),m^2);
@@ -66,9 +86,9 @@ for i = 1:n
     % gammaD VD
     U = U0+rand(2,1);
     % x y theta gamma v
-    Q = [0,0,0,0,0]+rand(5,1)';
-    [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( Q(1), Q(2), Q(3) );
-    observations(i,:) = Q(1:m)-[ xGPS, yGPS, theta_GPS ];
+    QPrev = [0,0,0,0,0]+rand(5,1)';
+    [ xGPS, yGPS, theta_GPS ] = GPS_CompassNoisy( QPrev(1), QPrev(2), QPrev(3) );
+    observations(i,:) = QPrev(1:m)-[ xGPS, yGPS, theta_GPS ];
     if mod(i,measurementInterval)==0
         covStorage(i/measurementInterval,:,:) = cov(observations(1:i,:));
     end

@@ -1,5 +1,5 @@
-function [ Xmax, Ymax,x,y] = generateNurseryFunction(X_first_tree,Y_first_tree, M, K, D,W, R,C)
-global bitmap TreeRadius minTreeRadius maxTreeRadius
+function [ Xmax, Ymax,x,y,radiusMat] = generateNurseryFunction(X_first_tree,Y_first_tree, M, K, D,W, R,C)
+global bitmap
 rng('shuffle'); %init random generator
 
 
@@ -16,7 +16,6 @@ gridResolution = Xmax/R;
 x_im=[0 Xmax]; y_im=[0 Ymax]; % to display image with proper axes
 
 x = zeros(M, K); y= zeros(M, K); %allocate arrays that hold tree center coordinates
-TreeRadius = zeros(M, K);
 maxTreeRadius = 0.5; %(m)
 minTreeRadius = 0.2; %(m)
 
@@ -35,18 +34,14 @@ x=x(:,1:K);
 y=y(:,1:K);
 
 % assign a random radius to each tree
+radiusMat = zeros(M,K);
 for j=1:K
     for i=1:M
         radius = (minTreeRadius + rand*(maxTreeRadius-minTreeRadius))/ (Xmax/C); %(m)
-        TreeRadius(i,j) = radius*gridResolution;
+        radiusMat(i,j) = radius;
         [I, J] = XYtoIJ(x(i,j), y(i,j), Xmax, Ymax, R, C);
         if rand > 0.02 
             draw_disc(I, J, radius, R, C); %plot tree trunk
-        else % if no tree drawn
-            % remove tree from true file
-            x(i,j) = 0;
-            y(i,j) = 0;
-            TreeRadius(i,j) = 0;
         end
     end
 end
