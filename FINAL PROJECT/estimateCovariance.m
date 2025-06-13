@@ -56,21 +56,21 @@ for i = 1:n
     end
     
 end
-
-covElements = reshape(covStorage,round(n/measurementInterval),m^2);
-f1 = figure();
-a1 = axes(f1);
-hold on;
-for i = 1:size(covElements,2)
-plot(covElements(:,i),LineWidth=2, DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
-yline(covElements(end,i),LineWidth=2,HandleVisibility='off',LineStyle="--")
-
-end
-title("Covariance for Odometry");
-xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
-ylabel("Covariance");
-l1 = legend;
-%cov(observations)
+% 
+% covElements = reshape(covStorage,round(n/measurementInterval),m^2);
+% f1 = figure();
+% a1 = axes(f1);
+% hold on;
+% for i = 1:size(covElements,2)
+% plot(covElements(:,i),LineWidth=2, DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
+% yline(covElements(end,i),LineWidth=2,HandleVisibility='off',LineStyle="--")
+% 
+% end
+% title("Covariance for Odometry");
+% xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
+% ylabel("Covariance");
+% l1 = legend;
+% %cov(observations)
 odoCov = reshape(covStorage(end,:,:),[m,m,1]);
 
 
@@ -93,20 +93,20 @@ for i = 1:n
         covStorage(i/measurementInterval,:,:) = cov(observations(1:i,:));
     end
 end
-covElements = reshape(covStorage,round(n/measurementInterval),m^2);
-f1 = figure();
-a1 = axes(f1);
-hold on;
-for i = 1:size(covElements,2)
-plot(covElements(:,i),LineWidth=2,DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
-yline(covElements(end,i),LineWidth=2,HandleVisibility='off',LineStyle="--")
-
-end
-
-title("Covariance for GPS");
-xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
-ylabel("Covariance");
-legend
+% covElements = reshape(covStorage,round(n/measurementInterval),m^2);
+% f1 = figure();
+% a1 = axes(f1);
+% hold on;
+% for i = 1:size(covElements,2)
+% plot(covElements(:,i),LineWidth=2,DisplayName=strcat("Intermediate Covariance Values for Entry: ", num2str(i)))
+% yline(covElements(end,i),LineWidth=2,HandleVisibility='off',LineStyle="--")
+% 
+% end
+% 
+% title("Covariance for GPS");
+% xlabel(strcat("Number of Samples(divided by ",num2str(measurementInterval),")"));
+% ylabel("Covariance");
+% legend
 GPSCov = reshape(covStorage(end,:,:),[m,m,1]);
 
 

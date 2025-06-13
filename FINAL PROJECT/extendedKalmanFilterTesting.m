@@ -1,8 +1,8 @@
-
-clear;
-close all;
-
-[odoCov,GPSCov] = estimateCovariance();
+% 
+% clear;
+% close all;
+% 
+% [odoCov,GPSCov] = estimateCovariance();
 
 
 % syms xSym ySym thetaSym gammaDesSym VDesSym DTSym LSym tau_vSym tau_gammaSym VD gammaD v1 v2 v3 h1 h2 h3
@@ -154,10 +154,10 @@ Q_loc_estimate = []; %  Array stores object's Kalman filter position estimate
 
 
 
-numTimesteps = 50;
+numTimesteps = 22;
 numIntegrationSteps = numTimesteps * DT / dt;
 
-QAll = zeros(numIntegrationSteps, length(Q));
+QAll = zeros(j, length(Q));
 USetPoint = U;  % [gammaDes; VDes]
 H = eye(3);     % Measurement matrix (GPS+compass observes [x; y; theta])
 
@@ -170,10 +170,10 @@ for j = 1:numTimesteps
    
     % Substitute numerical values (NOISE TERMS SET TO ZERO)
     subsVecSym = [QSym; USym; tau_vSym; tau_gammaSym; DTSym; LSym; v1; v2; v3; h1; h2; h3];
-    subsVecNum = [Q_estimate; U; tau_v; tau_gamma; DT; L; 0; 0; 0; 0; 0; 0];
+    subsVecNum = [Q_estimate; U; tau_v; tau_gamma; 1; L; 0; 0; 0; 0; 0; 0];
 
    [QNext] = robot_bike_dyn(Q, U, Umin, Umax, Qmin, Qmax, L, tau_gamma, tau_v);
-    Q = QNext(end, :)'; 
+    Q = QNext; 
     z = H * Q(1:3) + v;
     Fq = double(subs(FqSym, subsVecSym, subsVecNum));
     Fv = double(subs(FvSym, subsVecSym, subsVecNum));
@@ -187,7 +187,7 @@ for j = 1:numTimesteps
 
     %nu
     % Store results
-    QAll((j-1)*DT/dt+1 : j*DT/dt, :) = QNext;
+    QAll(j, :) = QNext;
     Q_true = [Q_true; Q'];          % Ground truth
     Q_sensed = [Q_sensed; z'];      % Noisy measurements
     Q_loc_estimate = [Q_loc_estimate; Q_estimate'];  % Filtered estimates
