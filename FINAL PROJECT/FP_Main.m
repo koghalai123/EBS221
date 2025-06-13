@@ -17,9 +17,8 @@ global dt DT minTreeRadius maxTreeRadius
 
 
 %% add path
-addpath 'C:\Users\kogha\OneDrive - University of California, Davis\Documents\My Documents\PhDClasses\3rd Quarter\EBS221\uploadedFiles\FINAL PROJECT/additionalFiles'
-addpath 'C:\Users\kogha\OneDrive - University of California, Davis\Documents\My Documents\PhDClasses\3rd Quarter\EBS221\uploadedFiles\FINAL PROJECT/additionalFiles/geom2d/geom2d'
-addpath 'C:\Users\kogha\OneDrive - University of California, Davis\Documents\My Documents\PhDClasses\3rd Quarter\EBS221\uploadedFiles\FINAL PROJECT'
+addpath 'additionalFiles'
+addpath 'additionalFiles/geom2d/geom2d'
 
 %% variables
 % gen nursery variables
